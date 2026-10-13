@@ -681,6 +681,56 @@ export default function App() {
         {/* PORTAL 2: THREAT INTELLIGENCE & NEWS FEED */}
         {activePortal === 'threats' && (
           <div className="space-y-6 max-w-6xl mx-auto">
+            {/* L402 Protocol Banner & Agentic Commerce */}
+            <div className="bg-gradient-to-r from-blue-950/60 to-purple-950/40 border border-blue-500/30 rounded-xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] bg-purple-500/20 text-purple-300 border border-purple-500/30 font-mono px-2 py-0.5 rounded-full font-bold">
+                    L402 Protocol Active
+                  </span>
+                  <span className="text-xs text-slate-400 font-mono">HTTP 402 Payment Required</span>
+                </div>
+                <h3 className="text-sm font-bold text-white">Agentic Micropayments via PayPal</h3>
+                <p className="text-xs text-slate-300 max-w-2xl leading-relaxed">
+                  Autonomous AI crawlers and external risk engines can programmatically license real-time zero-day PayPal threat telemetry via instant PayPal micropayments ($0.05–$0.25 USD).
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  onClick={async () => {
+                    const res = await fetch('/api/v1/l402/threat-feed');
+                    const chal = await res.json();
+                    alert(`[L402 Protocol HTTP 402 Response]\n\nServer returned Status: 402 Payment Required\nChallenge URL: ${chal.payment_request_url}\nOffer: Single Zero-Day Access ($0.05 USD via PayPal)\nContext Token: ${chal.payment_context_token}`);
+                  }}
+                  className="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3 py-1.5 rounded-lg text-xs font-medium transition"
+                >
+                  Test Unauthenticated (402)
+                </button>
+                <button
+                  onClick={async () => {
+                    const chalRes = await fetch('/api/v1/l402/threat-feed');
+                    const chal = await chalRes.json();
+                    const payRes = await fetch('/api/v1/l402/payment-request', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        payment_context_token: chal.payment_context_token || "mock_ctx",
+                        offer_id: "single_bulletin",
+                        agent_id: "merchant_agent_demo"
+                      })
+                    });
+                    const payData = await payRes.json();
+                    setSubmissionFeedback(`L402 Settlement Confirmed! PayPal Order: ${payData.paypal_order_id}. Cryptographic Token Issued: ${payData.bearer_token.substring(0, 24)}... Access Unlocked.`);
+                  }}
+                  className="bg-purple-600 hover:bg-purple-500 text-white px-3.5 py-1.5 rounded-lg text-xs font-semibold shadow-md shadow-purple-600/30 transition flex items-center gap-1.5"
+                >
+                  <Zap className="w-3.5 h-3.5" />
+                  Settle via PayPal ($0.05)
+                </button>
+              </div>
+            </div>
+
             <div className="bg-[#0b101d] border border-slate-800 p-5 rounded-xl flex items-center justify-between">
               <div>
                 <h2 className="text-base font-bold text-white flex items-center gap-2">
