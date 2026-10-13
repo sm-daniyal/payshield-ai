@@ -30,10 +30,12 @@ app.add_middleware(
 from app.api.evaluate import router as evaluate_router
 from app.api.webhooks import router as webhooks_router
 from app.api.disputes import router as disputes_router
+from app.api.threats import router as threats_router
 
 app.include_router(evaluate_router)
 app.include_router(webhooks_router)
 app.include_router(disputes_router)
+app.include_router(threats_router)
 
 
 @app.get("/api/health", tags=["System"])
