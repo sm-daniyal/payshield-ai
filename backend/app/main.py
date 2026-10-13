@@ -27,6 +27,11 @@ app.add_middleware(
 )
 
 
+from app.api.evaluate import router as evaluate_router
+
+app.include_router(evaluate_router)
+
+
 @app.get("/api/health", tags=["System"])
 async def health_check():
     """System health check — confirms the API is running."""
