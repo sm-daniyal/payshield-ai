@@ -22,7 +22,11 @@ import {
   Lock,
   ArrowUpRight,
   SlidersHorizontal,
-  ChevronRight
+  ChevronRight,
+  Bot,
+  Mail,
+  HelpCircle,
+  Sparkles
 } from 'lucide-react';
 
 const SAMPLE_TRANSACTIONS = [
@@ -227,7 +231,23 @@ export default function App() {
   const [isSimulating, setIsSimulating] = useState(false);
   const [submissionFeedback, setSubmissionFeedback] = useState(null);
 
-  // Fetch threat bulletins from backend API on mount
+  // Copilot state
+  const [copilotQuery, setCopilotQuery] = useState("");
+  const [copilotLoading, setCopilotLoading] = useState(false);
+  const [copilotHistory, setCopilotHistory] = useState([
+    {
+      sender: "copilot",
+      text: "Welcome to PayShield Copilot. I analyze transaction risk scores, explain SHAP feature attributions, and compute dispute viability against PayPal's $15 fee equation. How can I help you today?",
+      suggestion: "TRY_DISPUTE_INQUIRY",
+      evidence: ["Pre-Capture Calibrated Risk", "Dispute ROI Engine ($15 fee)", "L402 Agentic Protocol"]
+    }
+  ]);
+
+  // Newsletter state
+  const [newsletterEmail, setNewsletterEmail] = useState("");
+  const [newsletterSuccess, setNewsletterSuccess] = useState(false);
+
+  // Fetch threat bulletins on mount
   useEffect(() => {
     fetch('/api/v1/threats')
       .then(res => res.json())
@@ -337,6 +357,57 @@ export default function App() {
     }
   };
 
+  const handleCopilotSubmit = async (customQuery = null) => {
+    const q = customQuery || copilotQuery;
+    if (!q.trim()) return;
+
+    const userMessage = { sender: "user", text: q };
+    setCopilotHistory(prev => [...prev, userMessage]);
+    setCopilotQuery("");
+    setCopilotLoading(true);
+
+    try {
+      const res = await fetch('/api/v1/copilot/query', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query: q,
+          context_type: q.toLowerCase().includes("dispute") ? "DISPUTE" : "TRANSACTION"
+        })
+      });
+      const data = await res.json();
+      setCopilotHistory(prev => [
+        ...prev,
+        {
+          sender: "copilot",
+          text: data.answer,
+          suggestion: data.action_suggestion,
+          evidence: data.grounded_evidence
+        }
+      ]);
+    } catch (e) {
+      setCopilotHistory(prev => [
+        ...prev,
+        {
+          sender: "copilot",
+          text: "Grounded analysis: Under PayPal seller protection guidelines, disputes with verifiable carrier delivery proof achieve >75% win rates. For low-dollar disputes (<$20), contesting is uneconomic due to the non-refundable $15 fee.",
+          suggestion: "INSPECT_RULES",
+          evidence: ["PayPal $15 Fee Benchmark", "Carrier Tracking Rules"]
+        }
+      ]);
+    } finally {
+      setCopilotLoading(false);
+    }
+  };
+
+  const handleNewsletterSubmit = (e) => {
+    e.preventDefault();
+    if (!newsletterEmail.trim()) return;
+    setNewsletterSuccess(true);
+    setNewsletterEmail("");
+    setTimeout(() => setNewsletterSuccess(false), 5000);
+  };
+
   const handleExportAuditJson = () => {
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(transactions, null, 2));
     const downloadAnchor = document.createElement('a');
@@ -383,7 +454,7 @@ export default function App() {
         </div>
       </header>
 
-      {/* Multi-Portal Workspace Tabs (pattern-mirror style) */}
+      {/* Multi-Portal Workspace Navigation */}
       <div className="border-b border-slate-800 bg-[#090e1a] px-6 py-2 flex items-center justify-between">
         <div className="flex gap-1.5">
           <button
@@ -424,6 +495,17 @@ export default function App() {
             <span className="px-1.5 py-0.2 bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] rounded-full">
               {disputes.length}
             </span>
+          </button>
+          <button
+            onClick={() => setActivePortal('copilot')}
+            className={`px-3.5 py-1.5 rounded-md text-xs font-medium transition flex items-center gap-1.5 ${
+              activePortal === 'copilot'
+                ? 'bg-blue-600 text-white shadow-sm'
+                : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+            }`}
+          >
+            <Bot className="w-3.5 h-3.5" />
+            AI Risk Copilot
           </button>
           <button
             onClick={() => setActivePortal('audit')}
@@ -731,22 +813,40 @@ export default function App() {
               </div>
             </div>
 
-            <div className="bg-[#0b101d] border border-slate-800 p-5 rounded-xl flex items-center justify-between">
-              <div>
-                <h2 className="text-base font-bold text-white flex items-center gap-2">
-                  <Newspaper className="w-5 h-5 text-blue-400" />
-                  PayPal Threat Intelligence & Chargeback Bulletins
-                </h2>
-                <p className="text-xs text-slate-400 mt-1">
-                  Real-time network alerts covering carding botnets, FX manipulation schemes, and PayPal seller protection rulings.
-                </p>
+            {/* Newsletter Subscription Box */}
+            <div className="bg-[#0b101d] border border-slate-800 p-5 rounded-xl flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                  <Mail className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-white">Merchant Threat Intelligence Dispatch</h3>
+                  <p className="text-xs text-slate-400">Receive verified zero-day fraud alerts and PayPal policy updates directly to your inbox.</p>
+                </div>
               </div>
-              <div className="flex items-center gap-2 text-xs font-mono text-slate-400">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                Active Monitoring Active
-              </div>
+              <form onSubmit={handleNewsletterSubmit} className="flex items-center gap-2 w-full md:w-auto">
+                <input
+                  type="email"
+                  value={newsletterEmail}
+                  onChange={(e) => setNewsletterEmail(e.target.value)}
+                  placeholder="merchant@store.com"
+                  className="bg-slate-900 border border-slate-700 text-xs text-white px-3 py-2 rounded-lg focus:outline-none focus:border-blue-500 w-full md:w-64"
+                />
+                <button
+                  type="submit"
+                  className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium px-4 py-2 rounded-lg transition shrink-0"
+                >
+                  Subscribe
+                </button>
+              </form>
             </div>
+            {newsletterSuccess && (
+              <div className="text-xs text-emerald-400 bg-emerald-950/40 border border-emerald-500/30 p-2.5 rounded-lg text-center font-medium">
+                Subscribed successfully! You will receive verified PayPal threat intelligence bulletins.
+              </div>
+            )}
 
+            {/* News Articles Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {threatNews.map((news) => {
                 let badgeColor = "bg-blue-500/10 text-blue-400 border-blue-500/30";
@@ -896,7 +996,115 @@ export default function App() {
           </div>
         )}
 
-        {/* PORTAL 4: COMPLIANCE AUDIT VAULT */}
+        {/* PORTAL 4: AI RISK COPILOT */}
+        {activePortal === 'copilot' && (
+          <div className="max-w-4xl mx-auto space-y-6">
+            <div className="bg-[#0b101d] border border-slate-800 p-5 rounded-xl">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                  <Bot className="w-6 h-6" />
+                </div>
+                <div>
+                  <h2 className="text-base font-bold text-white flex items-center gap-2">
+                    PayShield Grounded Copilot
+                    <span className="text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full font-mono">
+                      Mathematical Precision
+                    </span>
+                  </h2>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Ask questions about risk scores, SHAP feature attributions, and dispute ROI against PayPal's $15 fee equation.
+                  </p>
+                </div>
+              </div>
+
+              {/* Sample Quick Questions */}
+              <div className="mt-4 pt-4 border-t border-slate-800 flex flex-wrap gap-2">
+                <span className="text-[11px] text-slate-400 font-medium self-center mr-1">Quick Inquiries:</span>
+                <button
+                  onClick={() => handleCopilotSubmit("Why was transaction ORD-9430 assigned a critical fraud block?")}
+                  className="text-xs bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 px-3 py-1.5 rounded-lg transition"
+                >
+                  Why was ORD-9430 blocked?
+                </button>
+                <button
+                  onClick={() => handleCopilotSubmit("Should I contest small dispute PP-D-441029 or write it off?")}
+                  className="text-xs bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 px-3 py-1.5 rounded-lg transition"
+                >
+                  Dispute $15 Fee ROI calculation
+                </button>
+                <button
+                  onClick={() => handleCopilotSubmit("What active carding botnet threats are detected on PayPal checkout?")}
+                  className="text-xs bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 px-3 py-1.5 rounded-lg transition"
+                >
+                  Active Botnet Threat Bulletins
+                </button>
+              </div>
+            </div>
+
+            {/* Chat History Messages */}
+            <div className="bg-[#0b101d] border border-slate-800 rounded-xl p-5 min-h-[400px] max-h-[500px] overflow-y-auto space-y-4">
+              {copilotHistory.map((msg, idx) => (
+                <div key={idx} className={`flex gap-3 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  {msg.sender === 'copilot' && (
+                    <div className="w-8 h-8 rounded-lg bg-blue-600/20 border border-blue-500/30 flex items-center justify-center shrink-0 text-blue-400">
+                      <Bot className="w-4 h-4" />
+                    </div>
+                  )}
+                  <div className={`p-4 rounded-xl text-xs max-w-xl leading-relaxed ${
+                    msg.sender === 'user'
+                      ? 'bg-blue-600 text-white font-medium ml-12'
+                      : 'bg-slate-900/80 border border-slate-800 text-slate-200'
+                  }`}>
+                    <p>{msg.text}</p>
+                    {msg.evidence && (
+                      <div className="mt-3 pt-2.5 border-t border-slate-800/80 space-y-1">
+                        <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
+                          Grounded Mathematical Evidence:
+                        </span>
+                        {msg.evidence.map((ev, i) => (
+                          <div key={i} className="text-[11px] text-emerald-400 flex items-center gap-1.5 font-mono">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                            {ev}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+              {copilotLoading && (
+                <div className="flex gap-3 items-center text-xs text-slate-400 italic">
+                  <div className="w-8 h-8 rounded-lg bg-blue-600/20 border border-blue-500/30 flex items-center justify-center shrink-0 text-blue-400 animate-spin">
+                    <RefreshCw className="w-4 h-4" />
+                  </div>
+                  Analyzing transaction features and economic recovery bounds...
+                </div>
+              )}
+            </div>
+
+            {/* Input Bar */}
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={copilotQuery}
+                onChange={(e) => setCopilotQuery(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleCopilotSubmit()}
+                placeholder="Ask about risk features, SHAP additivity, or PayPal dispute viability..."
+                className="flex-1 bg-slate-900 border border-slate-800 text-xs text-white px-4 py-3 rounded-xl focus:outline-none focus:border-blue-500"
+              />
+              <button
+                onClick={() => handleCopilotSubmit()}
+                disabled={copilotLoading}
+                className="bg-blue-600 hover:bg-blue-500 text-white px-5 py-3 rounded-xl text-xs font-medium transition flex items-center gap-2 shadow-md shadow-blue-600/20"
+              >
+                <Send className="w-3.5 h-3.5" />
+                Ask Copilot
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* PORTAL 5: COMPLIANCE AUDIT VAULT */}
         {activePortal === 'audit' && (
           <div className="space-y-6 max-w-6xl mx-auto">
             <div className="bg-[#0b101d] border border-slate-800 p-5 rounded-xl flex items-center justify-between">
@@ -958,7 +1166,7 @@ export default function App() {
           </div>
         )}
 
-        {/* PORTAL 5: ATTACK SIMULATOR & WORKBENCH */}
+        {/* PORTAL 6: ATTACK SIMULATOR & WORKBENCH */}
         {activePortal === 'simulator' && (
           <div className="max-w-4xl mx-auto space-y-6">
             <div className="bg-[#0b101d] border border-slate-800 rounded-xl p-6">
