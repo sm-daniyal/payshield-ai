@@ -27,7 +27,7 @@ PayShield AI's listener processes incoming events:
               │                                         │
               ▼                                         ▼
    Pre-Capture Risk Radar                    Autonomous Recovery Agent
-   (LightGBM + SHAP + Policy)                (Vasuli Dispute Economics)
+   (LightGBM + SHAP + Policy)                (Dispute Recovery Economics)
               │                                         │
               ▼                                         ▼
    Action: ALLOW / BLOCK / STEP-UP           Action: PROCEED / WRITE-OFF
@@ -40,7 +40,7 @@ PayShield AI's listener processes incoming events:
 
 ---
 
-## 3. Dispute Recovery Economics (Vasuli Pattern)
+## 3. Dispute Recovery Economics Model
 
 PayPal assesses a non-refundable dispute fee of **$15.00 USD** on contested chargebacks. Contesting an unrecoverable dispute results in double loss: lost transaction amount + $15.00 dispute penalty.
 

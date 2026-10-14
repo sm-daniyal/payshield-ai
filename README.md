@@ -12,13 +12,13 @@ Real-time, zero-hallucination transaction-risk scoring and autonomous dispute re
 
 PayShield AI protects PayPal merchants across the complete transaction lifecycle:
 
-**1. Pre-Capture Risk Radar (MerchantShield AI standard)**
+**1. Pre-Capture Risk Radar**
 - Calibrated LightGBM model produces a 0–100 risk score on every PayPal checkout event.
 - Grounded SHAP TreeExplainer provides mathematically verifiable feature attributions.
 - Additivity invariant: `base_bias + sum(shap_values) == predicted_probability` (delta < 1e-4). Zero hallucinations.
 - Deterministic 5-rule policy engine maps (risk_score, amount) to bounded actions.
 
-**2. Post-Dispute Recovery Agent (Vasuli standard)**
+**2. Autonomous Dispute Recovery Agent**
 - Evaluates dispute viability: `Expected Net Recovery = (P_win × amount) - $15 PayPal fee`.
 - Compiles evidence dossiers and submits directly to PayPal Disputes API.
 - All irreversible actions staged for merchant approval (human-in-the-loop).

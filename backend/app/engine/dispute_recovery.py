@@ -1,5 +1,5 @@
 """
-PayShield AI — Autonomous Dispute Recovery Engine (Vasuli Standard)
+PayShield AI — Autonomous Dispute Recovery Engine
 
 Adapted for PayPal payment rails and dispute fee structure.
 Eliminates unprofitable dispute contests and automates high-probability recoveries.
@@ -97,7 +97,7 @@ def generate_evidence_dossier(evidence: DisputeEvidenceInput, win_prob: float) -
 
 def evaluate_dispute_recovery(evidence: DisputeEvidenceInput) -> DisputeAssessmentResult:
     """
-    Apply Vasuli-style economic recovery optimization to an incoming PayPal dispute.
+    Apply economic recovery optimization to an incoming PayPal dispute.
     Strictly separates profitable disputes from uneconomic fee sinks.
     """
     p_win = compute_win_probability(evidence)

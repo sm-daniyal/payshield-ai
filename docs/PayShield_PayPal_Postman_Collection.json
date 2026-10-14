@@ -119,13 +119,13 @@
       }
     },
     {
-      "name": "4. PayPal Dispute Webhook (Vasuli Recovery)",
+      "name": "4. PayPal Dispute Webhook (Autonomous Recovery)",
       "event": [
         {
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test('Dispute webhook routed to Vasuli Recovery', function () {",
+              "pm.test('Dispute webhook routed to Autonomous Recovery', function () {",
               "    pm.response.to.have.status(200);",
               "    var jsonData = pm.response.json();",
               "    pm.expect(jsonData.status).to.eql('PROCESSED');",
@@ -153,7 +153,7 @@
       }
     },
     {
-      "name": "5. Dispute ROI Evaluation (Vasuli Equation)",
+      "name": "5. Dispute ROI Evaluation (PayShield Equation)",
       "event": [
         {
           "listen": "test",

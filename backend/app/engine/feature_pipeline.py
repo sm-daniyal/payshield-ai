@@ -5,8 +5,6 @@ Core principle: All features are computed EXCLUSIVELY from strictly-prior
 transaction history. The current transaction's label is never visible at
 feature extraction time — identical to production inference conditions.
 
-This directly replicates the MerchantShield AI leakage prevention standard.
-
 Features extracted (6 total):
   1. amount_zscore            — Amount deviation from buyer's historical baseline
   2. velocity_1h              — Transaction count in the past 1 hour (same buyer)

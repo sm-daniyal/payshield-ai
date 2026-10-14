@@ -70,10 +70,10 @@ GLOBAL_THREAT_BULLETINS: list[ThreatArticle] = [
         category="DISPUTE_RULES",
         severity="LOW",
         published_at="2026-10-10T09:00:00Z",
-        mitigation_rule="Vasuli Recovery Engine — PROCEED_DIRECT_DISPUTE Dossier Generation",
+        mitigation_rule="PayShield Dispute Engine — PROCEED_DIRECT_DISPUTE Dossier Generation",
         impacted_channels=["Disputes API v1", "Physical Shipments"],
         actionable_recommendation=(
-            "Vasuli engine automatically pairs USPS/FedEx carrier delivery scans with PayPal order captures, "
+            "PayShield dispute engine automatically pairs USPS/FedEx carrier delivery scans with PayPal order captures, "
             "yielding >75% win probability and guaranteed positive expected recovery."
         ),
     ),

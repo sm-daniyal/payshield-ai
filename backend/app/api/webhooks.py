@@ -106,7 +106,7 @@ async def process_paypal_webhook(payload: WebhookEventPayload) -> dict[str, Any]
             "audit_hash": record_hash,
         }
 
-    # 2. Dispute Event -> Trigger Vasuli Recovery Optimization
+    # 2. Dispute Event -> Trigger Autonomous Recovery Optimization
     if event_type in ("CUSTOMER.DISPUTE.CREATED", "PAYMENT.SALE.REVERSED"):
         dispute_id = resource.get("dispute_id", f"DISPUTE-{payload.id}")
         tx_id = resource.get("disputed_transactions", [{}])[0].get("seller_transaction_id", f"TXN-{dispute_id}")

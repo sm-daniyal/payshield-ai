@@ -3,7 +3,7 @@ PayShield AI — PayPal Client, Webhooks & Dispute Recovery Unit Tests
 
 Tests cover:
   1. PayPal REST client token management and API mock responses.
-  2. Vasuli dispute economics: Expected Net Recovery with $15 PayPal fee.
+  2. PayShield dispute economics: Expected Net Recovery with $15 PayPal fee.
   3. Evidence dossier compilation and formatting.
   4. SQLite audit store write and tamper-evident SHA-256 verification.
   5. Asynchronous PayPal webhook ingestion for orders and disputes.
@@ -70,7 +70,7 @@ class TestPayPalClient:
 
 
 # ---------------------------------------------------------------------------
-# 2. Vasuli Dispute Recovery Economics Tests
+# 2. PayShield Dispute Recovery Economics Tests
 # ---------------------------------------------------------------------------
 
 class TestDisputeRecoveryEconomics:

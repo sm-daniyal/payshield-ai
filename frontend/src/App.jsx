@@ -203,8 +203,8 @@ const THREAT_NEWS_ITEMS = [
     category: "DISPUTE_RULES",
     severity: "INFO",
     published_at: "Oct 10, 2026",
-    mitigation_rule: "Vasuli Recovery Engine — PROCEED_DIRECT_DISPUTE",
-    actionable_recommendation: "Vasuli engine automatically pairs USPS/FedEx carrier delivery scans with PayPal order captures."
+    mitigation_rule: "PayShield Dispute Engine — PROCEED_DIRECT_DISPUTE",
+    actionable_recommendation: "PayShield dispute engine automatically pairs USPS/FedEx carrier delivery scans with PayPal order captures."
   },
   {
     id: "INTEL-2026-044",
@@ -362,7 +362,7 @@ export default function App() {
                 PayPal AI Hackathon 2026
               </span>
             </div>
-            <p className="text-[11px] text-slate-400">Zero-Hallucination Risk Radar & Vasuli Dispute Recovery</p>
+            <p className="text-[11px] text-slate-400">Zero-Hallucination Risk Radar & Autonomous Dispute Recovery</p>
           </div>
         </div>
 
@@ -377,7 +377,7 @@ export default function App() {
             <div className="text-sm font-bold text-white">$142,850.00</div>
           </div>
           <div className="text-right border-l border-slate-800 pl-4">
-            <div className="text-[11px] text-slate-400">Vasuli Net ROI</div>
+            <div className="text-[11px] text-slate-400">Dispute Net ROI</div>
             <div className="text-sm font-bold text-emerald-400">+$1,480.20</div>
           </div>
         </div>
@@ -420,7 +420,7 @@ export default function App() {
             }`}
           >
             <DollarSign className="w-3.5 h-3.5" />
-            Vasuli Dispute Studio
+            Autonomous Dispute Studio
             <span className="px-1.5 py-0.2 bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] rounded-full">
               {disputes.length}
             </span>
@@ -786,7 +786,7 @@ export default function App() {
           </div>
         )}
 
-        {/* PORTAL 3: VASULI DISPUTE STUDIO */}
+        {/* PORTAL 3: AUTONOMOUS DISPUTE STUDIO */}
         {activePortal === 'disputes' && (
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -796,7 +796,7 @@ export default function App() {
                 <p className="text-xs text-slate-400 mt-1">Non-refundable fee assessed by PayPal on contested claims.</p>
               </div>
               <div className="bg-[#0b101d] border border-slate-800 p-4 rounded-xl">
-                <div className="text-[11px] text-slate-400 uppercase font-semibold">Vasuli Recovery Model</div>
+                <div className="text-[11px] text-slate-400 uppercase font-semibold">Autonomous Recovery Model</div>
                 <div className="text-base font-bold font-mono text-emerald-400 mt-1">
                   Expected EV = (P_win × Amount) - $15.00
                 </div>
@@ -812,7 +812,7 @@ export default function App() {
             <div className="bg-[#0b101d] border border-slate-800 rounded-xl overflow-hidden">
               <div className="p-4 border-b border-slate-800 flex items-center justify-between">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-slate-200">
-                  PayPal Disputes Recovery Queue (Vasuli Engine)
+                  PayPal Disputes Recovery Queue (Autonomous Engine)
                 </h3>
                 <span className="text-xs text-slate-400 font-mono">Cost Optimal Cutoff: 0.40</span>
               </div>
