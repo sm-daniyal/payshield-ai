@@ -8,20 +8,46 @@ Real-time, zero-hallucination transaction-risk scoring and autonomous dispute re
 
 ---
 
-## What It Does
+---
 
-PayShield AI protects PayPal merchants across the complete transaction lifecycle:
+## The Problem: 3 Silent Drains on PayPal Merchants
 
-**1. Pre-Capture Risk Radar**
-- Calibrated LightGBM model produces a 0–100 risk score on every PayPal checkout event.
-- Grounded SHAP TreeExplainer provides mathematically verifiable feature attributions.
-- Additivity invariant: `base_bias + sum(shap_values) == predicted_probability` (delta < 1e-4). Zero hallucinations.
-- Deterministic 5-rule policy engine maps (risk_score, amount) to bounded actions.
+Every online business accepting PayPal loses significant profit margins to three unaddressed problems:
 
-**2. Autonomous Dispute Recovery Agent**
-- Evaluates dispute viability: `Expected Net Recovery = (P_win × amount) - $15 PayPal fee`.
-- Compiles evidence dossiers and submits directly to PayPal Disputes API.
-- All irreversible actions staged for merchant approval (human-in-the-loop).
+1. **Checkout Fraud & Card Testing (Before Capture)**:
+   Fraud rings buy stolen credit card lists and use automated bots to run rapid, low-dollar test purchases ($1–$2) on merchant checkouts. Traditional "AI wrappers" feed transactions into generative LLMs that **hallucinate** risk scores, violate financial compliance, and provide zero mathematical audit trails.
+
+2. **The Non-Refundable $15.00 Dispute Fee Trap (After Capture)**:
+   When a buyer files a claim (e.g. *Item Not Received*), PayPal assesses a **non-refundable $15.00 fee** on contested disputes—win or lose. 
+   - Fighting a **$12.00 t-shirt** dispute is a guaranteed mathematical loss:
+     $$\text{Expected Value} = (0.50 \times \$12.00) - \$15.00 = -\$9.00$$
+     The merchant loses more money fighting than writing it off.
+   - Conversely, for a **$200.00 order** where the merchant has carrier delivery proof, merchants often miss response deadlines and forfeit legitimate revenue.
+
+3. **Unmonetized AI Bot & Scraper Traffic (The Data Drain)**:
+   Autonomous AI crawlers and bots constantly scrape merchant catalogs and threat intelligence, draining server bandwidth for free. Traditional CAPTCHAs and credit card forms block bots entirely because bots cannot solve puzzles or type credit cards. Merchants lack a programmatic micropayment rail to monetize bot traffic.
+
+---
+
+## The Solution: PayShield AI
+
+PayShield AI solves all three problems through a unified, mathematically certified architecture:
+
+1. **Pre-Capture Risk Radar (Zero Hallucinations)**:
+   - Platt-calibrated LightGBM model outputs certified probabilities $P(\text{fraud} \mid x) \in [0, 1]$ across 7 leakage-safe feature signals.
+   - Grounded SHAP TreeExplainer certifies feature attributions with a mathematical **Additivity Seal** ($\Delta < 10^{-4}$).
+   - Bounded by a deterministic 5-rule policy engine (`ALLOW`, `MONITOR`, `STEP_UP`, `BLOCK`).
+
+2. **Autonomous Dispute Recovery Engine ($15 Fee Optimization)**:
+   - Evaluates dispute viability: $\text{Expected Net Recovery} = (P_{\text{win}} \times \text{Amount}) - \$15.00$.
+   - **Auto-writes off negative-EV claims** to save merchants from paying the non-refundable $15 fee.
+   - **Autonomously compiles carrier tracking scans** (USPS/FedEx) and transmits defense dossiers directly to the **PayPal Disputes v1 API** for positive-EV claims.
+
+3. **Threat Newsroom & L402 Agentic PayPal Paywall**:
+   - Publishes real-time zero-day merchant fraud bulletins in a clean 4-column layout.
+   - **Free browser access** for human merchants.
+   - **HTTP 402 Payment Required paywall** for automated AI crawlers, programmatically charging **$0.05 USD micropayments via PayPal Orders v2 API** (`intent: CAPTURE`) to unlock the raw telemetry.
+
 
 ---
 
