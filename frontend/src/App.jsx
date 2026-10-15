@@ -1,422 +1,31 @@
 import React, { useState, useEffect } from 'react';
+import { CheckCircle2 } from 'lucide-react';
+
+// Data
 import {
-  Shield,
-  ShieldAlert,
-  ShieldCheck,
-  AlertTriangle,
-  RefreshCw,
-  Send,
-  Zap,
-  TrendingUp,
-  FileText,
-  DollarSign,
-  Activity,
-  CheckCircle2,
-  Clock,
-  Layers,
-  Search,
-  ExternalLink,
-  Download,
-  Newspaper,
-  Database,
-  Lock,
-  ArrowUpRight,
-  SlidersHorizontal,
-  ChevronRight,
-  Bot,
-  Mail,
-  HelpCircle,
-  Sparkles,
-  Terminal,
-  LayoutGrid,
-  Columns3,
-  List,
-  Check,
-  Copy,
-  MailCheck
-} from 'lucide-react';
+  SAMPLE_TRANSACTIONS,
+  INITIAL_DISPUTES,
+  THREAT_NEWS_ITEMS,
+  THREAT_CATEGORIES
+} from './data/mockData';
 
-const SAMPLE_TRANSACTIONS = [
-  {
-    transaction_id: "ORD-8921-LIVE",
-    amount_usd: 129.50,
-    buyer_email: "susan.chen@gmail.com",
-    buyer_country: "US",
-    shipping_country: "US",
-    ip_country: "US",
-    risk_score: 4.8,
-    action: "ALLOW",
-    rule_triggered: "RULE_1_PROB_BELOW_0_20_LOW_RISK",
-    timestamp: "2 mins ago",
-    features: {
-      amount_zscore: 0.12,
-      velocity_1h: 1,
-      velocity_24h: 1,
-      velocity_7d: 3,
-      fx_spread: 0.002,
-      geo_mismatch: 0.0,
-      account_risk_score: 0.08
-    },
-    shap_contributions: [
-      { feature: "account_risk_score", value: 0.08, shap_value: -0.38, contribution_pct: 42.0 },
-      { feature: "geo_mismatch", value: 0.0, shap_value: -0.22, contribution_pct: 24.3 },
-      { feature: "velocity_1h", value: 1.0, shap_value: -0.15, contribution_pct: 16.5 },
-      { feature: "amount_zscore", value: 0.12, shap_value: -0.09, contribution_pct: 9.9 },
-      { feature: "fx_spread", value: 0.002, shap_value: -0.06, contribution_pct: 7.3 }
-    ],
-    additivity_verification: {
-      base_bias: -1.062,
-      shap_sum: -0.90,
-      predicted_probability: 0.048,
-      delta: 0.000021,
-      verified: true
-    }
-  },
-  {
-    transaction_id: "ORD-9430-BURST",
-    amount_usd: 680.00,
-    buyer_email: "alex99_carder@tempinbox.org",
-    buyer_country: "US",
-    shipping_country: "US",
-    ip_country: "NG",
-    risk_score: 88.5,
-    action: "BLOCK_AND_FLAG_DISPUTE",
-    rule_triggered: "RULE_5_PROB_CRITICAL_HIGH_VALUE_BLOCK",
-    timestamp: "6 mins ago",
-    features: {
-      amount_zscore: 4.25,
-      velocity_1h: 7,
-      velocity_24h: 11,
-      velocity_7d: 12,
-      fx_spread: 0.048,
-      geo_mismatch: 1.0,
-      account_risk_score: 0.89
-    },
-    shap_contributions: [
-      { feature: "velocity_1h", value: 7.0, shap_value: 1.45, contribution_pct: 35.8 },
-      { feature: "geo_mismatch", value: 1.0, shap_value: 1.10, contribution_pct: 27.2 },
-      { feature: "amount_zscore", value: 4.25, shap_value: 0.85, contribution_pct: 21.0 },
-      { feature: "account_risk_score", value: 0.89, shap_value: 0.65, contribution_pct: 16.0 }
-    ],
-    additivity_verification: {
-      base_bias: -1.062,
-      shap_sum: 4.05,
-      predicted_probability: 0.885,
-      delta: 0.000018,
-      verified: true
-    }
-  },
-  {
-    transaction_id: "ORD-9112-STEPUP",
-    amount_usd: 340.00,
-    buyer_email: "mark.nordic@online.se",
-    buyer_country: "SE",
-    shipping_country: "SE",
-    ip_country: "SE",
-    risk_score: 48.2,
-    action: "STEP_UP_VERIFICATION",
-    rule_triggered: "RULE_3_PROB_ELEVATED_STEP_UP_AUTH",
-    timestamp: "14 mins ago",
-    features: {
-      amount_zscore: 2.1,
-      velocity_1h: 3,
-      velocity_24h: 4,
-      velocity_7d: 5,
-      fx_spread: 0.015,
-      geo_mismatch: 0.0,
-      account_risk_score: 0.42
-    },
-    shap_contributions: [
-      { feature: "amount_zscore", value: 2.1, shap_value: 0.52, contribution_pct: 38.0 },
-      { feature: "velocity_1h", value: 3.0, shap_value: 0.45, contribution_pct: 32.8 },
-      { feature: "account_risk_score", value: 0.42, shap_value: 0.40, contribution_pct: 29.2 }
-    ],
-    additivity_verification: {
-      base_bias: -1.062,
-      shap_sum: 1.37,
-      predicted_probability: 0.482,
-      delta: 0.000034,
-      verified: true
-    }
-  }
-];
-
-const INITIAL_DISPUTES = [
-  {
-    dispute_id: "PP-D-882194",
-    transaction_id: "TXN-9912048",
-    amount_usd: 175.00,
-    buyer_email: "customer_complaint@outlook.com",
-    reason: "MERCHANDISE_OR_SERVICE_NOT_RECEIVED",
-    win_probability: 0.78,
-    expected_net_recovery: 121.50,
-    action: "PROCEED_DIRECT_DISPUTE",
-    has_delivery_proof: true,
-    has_avs_cvv: true,
-    tracking: "9400111899562537684000 (USPS Delivered)",
-    status: "READY_TO_SUBMIT"
-  },
-  {
-    dispute_id: "PP-D-441029",
-    transaction_id: "TXN-3829104",
-    amount_usd: 14.50,
-    buyer_email: "small_order@fastmail.com",
-    reason: "UNRECOGNIZED_TRANSACTION",
-    win_probability: 0.35,
-    expected_net_recovery: -9.92,
-    action: "AUTO_WRITE_OFF_UNECONOMIC",
-    has_delivery_proof: false,
-    has_avs_cvv: false,
-    tracking: "None",
-    status: "AUTO_WRITTEN_OFF"
-  },
-  {
-    dispute_id: "PP-D-619280",
-    transaction_id: "TXN-7740192",
-    amount_usd: 85.00,
-    buyer_email: "buyer_refund@yahoo.com",
-    reason: "NOT_AS_DESCRIBED",
-    win_probability: 0.48,
-    expected_net_recovery: 25.80,
-    action: "ESCALATE_MANUAL_REVIEW",
-    has_delivery_proof: true,
-    has_avs_cvv: false,
-    tracking: "1Z9999999999999999 (UPS In Transit)",
-    status: "PENDING_MERCHANT_REVIEW"
-  }
-];
-
-const THREAT_NEWS_ITEMS = [
-  // Column 1: Merchant Chronicles (Store Survival)
-  {
-    id: "DISPATCH-2026-101",
-    headline: "The $14k Holiday Chargeback Wave: How an Indie Boutique Survived Coordinated Return Fraud",
-    summary: "Independent boutique owners report sophisticated return-syndicates exploiting holiday return policies. Real-time address validation and carrier delivery proofs prevented 92% of frivolous losses.",
-    category: "MERCHANT_CHRONICLES",
-    severity: "CRITICAL",
-    published_at: "14 mins ago",
-    mitigation_rule: "Enforce Delivery Scan Verification Prior to Issuing Merchant Refunds",
-    impacted_channels: ["Shopify Checkout", "PayPal Express", "Custom Boutiques"],
-    actionable_recommendation: "Never contest low-ticket claims without carrier scans; automate dispute evidence submission for claims >$50."
-  },
-  {
-    id: "DISPATCH-2026-102",
-    headline: "Friendly Fraud Syndicates Targeting Custom Apparel Makers via Order Redirection",
-    summary: "Boutique apparel merchants face coordinated buyer redirection requests after carrier dispatch. Fraudsters claim non-receipt at initial address while collecting rerouted packages.",
-    category: "MERCHANT_CHRONICLES",
-    severity: "ELEVATED",
-    published_at: "2 hours ago",
-    mitigation_rule: "Disallow In-Flight Carrier Address Changes Without Secondary Re-Auth",
-    impacted_channels: ["Direct Commerce", "Custom Manufacturing"],
-    actionable_recommendation: "Lock delivery address with carriers at label generation to preserve PayPal seller protection rights."
-  },
-  {
-    id: "DISPATCH-2026-103",
-    headline: "The 'Wardrobing' Racket: Why Fashion Retailers Are Installing Automated Serial Tracking",
-    summary: "High-end luxury sellers report a 34% surge in one-time wear returns. Tamper-evident tags and cryptographic order verification led to 80% reduction in abusive refund claims.",
-    category: "MERCHANT_CHRONICLES",
-    severity: "ELEVATED",
-    published_at: "5 hours ago",
-    mitigation_rule: "Cryptographic Item Serialization & Photo Proof on Packaging",
-    impacted_channels: ["Luxury Goods", "Apparel Stores"],
-    actionable_recommendation: "Pair packaging serial photos with PayPal checkout order captures to counter Not-As-Described claims."
-  },
-  {
-    id: "DISPATCH-2026-104",
-    headline: "From Shopify to PayPal: How 3 Indie Merchants Recovered Stolen Inventory Margins",
-    summary: "Case studies from small business founders illustrating how autonomous evidence assembly turned a 22% dispute win rate into an 84% recovery rate within two fiscal quarters.",
-    category: "MERCHANT_CHRONICLES",
-    severity: "LOW",
-    published_at: "Yesterday",
-    mitigation_rule: "PayShield Dispute Engine — Autonomous Dossier Generation",
-    impacted_channels: ["Shopify", "WooCommerce", "PayPal Invoicing"],
-    actionable_recommendation: "Connect store order webhooks to automatic dispute dossier compilation engines."
-  },
-
-  // Column 2: Shipping & Logistics (Delivery Proof)
-  {
-    id: "DISPATCH-2026-088",
-    headline: "Postal Reality Check: Why Carrier Tracking Scans Are Your Only Legal Shield Under Disputes v1",
-    summary: "PayPal's seller protection updates reaffirm that verified online carrier delivery confirmation to the recipient's postal code provides conclusive merchant defense on Item-Not-Received claims.",
-    category: "SHIPPING_LOGISTICS",
-    severity: "ELEVATED",
-    published_at: "38 mins ago",
-    mitigation_rule: "PayShield Dispute Engine — Autonomous Dossier Generation",
-    impacted_channels: ["USPS Priority", "FedEx Home Delivery", "UPS Ground"],
-    actionable_recommendation: "Automatically sync postal tracking scans to PayPal Disputes v1 API to maintain a >85% win probability."
-  },
-  {
-    id: "DISPATCH-2026-089",
-    headline: "Porch Pirate Epidemic: When 'Delivered' Scans Aren't Enough Without Postal Code Matching",
-    summary: "Carriers misdelivering to adjacent postal zones leave merchants vulnerable. PayPal dispute arbiters require GPS delivery coordinates or exact zip code match to confirm seller defense.",
-    category: "SHIPPING_LOGISTICS",
-    severity: "CRITICAL",
-    published_at: "3 hours ago",
-    mitigation_rule: "Autonomous Geocoding Cross-Check on Carrier Delivery Events",
-    impacted_channels: ["Last-Mile Delivery", "Regional Couriers"],
-    actionable_recommendation: "Validate carrier delivery postal code against transaction shipping address before accepting claims."
-  },
-  {
-    id: "DISPATCH-2026-090",
-    headline: "USPS vs FedEx vs UPS: Signature Confirmation Thresholds That Actually Hold Up in Arbitration",
-    summary: "Orders above $750 require physical signature proof under PayPal Seller Protection terms. Missing signature proof on high-ticket orders results in automatic claim forfeiture.",
-    category: "SHIPPING_LOGISTICS",
-    severity: "ELEVATED",
-    published_at: "6 hours ago",
-    mitigation_rule: "RULE_2_AMOUNT_ZSCORE_STEP_UP & Signature Auto-Enforcement",
-    impacted_channels: ["High-Value Electronics", "Jewelry Retail"],
-    actionable_recommendation: "Automatically flag orders >$750 to mandate carrier adult signature confirmation at checkout."
-  },
-  {
-    id: "DISPATCH-2026-091",
-    headline: "Cross-Border Transit Lags: Handling 45-Day Customs Holds Without Triggering Buyer Chargebacks",
-    summary: "International shipments held in customs often prompt impatient buyers to file premature claims. Proactive carrier tracking telemetry updates sent to PayPal prevent premature dispute escalation.",
-    category: "SHIPPING_LOGISTICS",
-    severity: "LOW",
-    published_at: "Yesterday",
-    mitigation_rule: "Automated Customs Hold Telemetry Ingestion & Dispute Deferral",
-    impacted_channels: ["DHL Express", "EMS Global", "Border Logistics"],
-    actionable_recommendation: "Ingest carrier transit milestone webhooks to notify buyers and defer dispute windows during inspection."
-  },
-
-  // Column 3: Payments & Currency Rails (The $15 Fee Reality)
-  {
-    id: "DISPATCH-2026-074",
-    headline: "The $15 Fee Trap: Why Fighting a $12 Claim Mathematically Destroys Merchant Margins",
-    summary: "PayPal assesses a non-refundable $15 fee on contested claims regardless of outcome. Independent data shows store owners lose more capital fighting cheap claims than immediately conceding.",
-    category: "PAYMENTS_RAILS",
-    severity: "ELEVATED",
-    published_at: "1 hour ago",
-    mitigation_rule: "PayShield Net EV Model: Auto-Concede Claims with Negative Expected Value",
-    impacted_channels: ["Multi-Currency Rails", "Digital Downloads", "Low-Dollar Goods"],
-    actionable_recommendation: "Only contest chargebacks when (P_win × Amount) > $15.00 to guarantee net positive recovery."
-  },
-  {
-    id: "DISPATCH-2026-075",
-    headline: "GBP/USD Currency Conversion Arbitrage: How Synthetic Buyer Rings Exploit FX Spreads",
-    summary: "Fraud rings exploit volatile currency conversion spreads on multi-currency PayPal invoices. Spreads diverging >3% from institutional mid-market benchmarks indicate high-risk arbitrage.",
-    category: "PAYMENTS_RAILS",
-    severity: "CRITICAL",
-    published_at: "4 hours ago",
-    mitigation_rule: "RULE_3_PROB_ELEVATED_STEP_UP_AUTH & fx_spread Feature Weighting",
-    impacted_channels: ["Multi-Currency Invoicing", "Cross-Border Goods"],
-    actionable_recommendation: "Trigger 3-D Secure biometric step-up whenever invoice rate diverges >3% from benchmark."
-  },
-  {
-    id: "DISPATCH-2026-076",
-    headline: "Interchange & Dispute Overhead: The Hidden Costs That Drain Small Business Reserves",
-    summary: "Beyond dispute fees, payment processors assess elevated interchange surcharges on merchants exceeding 1.0% dispute-to-sales ratios. Keeping ratios below 0.5% saves 80 bps on gross volume.",
-    category: "PAYMENTS_RAILS",
-    severity: "ELEVATED",
-    published_at: "7 hours ago",
-    mitigation_rule: "Pre-Capture Risk Scoring to Cap Dispute Ratios Below 0.40%",
-    impacted_channels: ["Payment Gateways", "Merchant Accounts"],
-    actionable_recommendation: "Filter high-risk authorizations pre-capture to protect merchant tier status and interchange rates."
-  },
-  {
-    id: "DISPATCH-2026-077",
-    headline: "The Net EV Formula: How Math Beats Emotion When Responding to Low-Dollar Claims",
-    summary: "Store founders often fight claims out of principle, losing money in fees. The Expected Value equation EV = (P_win × Amount) - $15.00 removes guesswork and maximizes retained profit.",
-    category: "PAYMENTS_RAILS",
-    severity: "LOW",
-    published_at: "Yesterday",
-    mitigation_rule: "Deterministic Expected Value Calculator for Dispute Triage",
-    impacted_channels: ["Merchant Operations", "Financial Forecasting"],
-    actionable_recommendation: "Adopt algorithmic dispute triage to automatically accept claims below the economic threshold."
-  },
-
-  // Column 4: The Bot Wave & AI (Monetizing Scrapers)
-  {
-    id: "DISPATCH-2026-052",
-    headline: "Taming Automated Scrapers: Why CAPTCHAs Fail and How L402 Turns Crawlers into Paying Customers",
-    summary: "Autonomous AI bots cannot solve visual puzzle captchas or enter credit card numbers. Implementing HTTP 402 with PayPal Orders v2 charges crawlers 5 cents per API call without human friction.",
-    category: "BOT_WAVE",
-    severity: "LOW",
-    published_at: "2 hours ago",
-    mitigation_rule: "L402 Protocol Gateway with PayPal Orders v2 Micro-Settlement",
-    impacted_channels: ["Public Catalog APIs", "Threat Telemetry", "Merchant Inventory"],
-    actionable_recommendation: "Replace hostile CAPTCHA blockers with L402 PayPal micropayment paywalls to monetize autonomous bot traffic."
-  },
-  {
-    id: "DISPATCH-2026-053",
-    headline: "Distributed LLM Scrapers Inundating Merchant Inventory Endpoints at 400 Requests/Sec",
-    summary: "AI agents scouring the web for pricing and stock availability overwhelm e-commerce databases. Unprotected endpoints face degraded checkout performance for legitimate human customers.",
-    category: "BOT_WAVE",
-    severity: "CRITICAL",
-    published_at: "5 hours ago",
-    mitigation_rule: "Adaptive Rate Limiting with L402 PayPal Fallback Challenge",
-    impacted_channels: ["Product Catalog", "Search APIs", "Stock Inquiries"],
-    actionable_recommendation: "Route excessive bot traffic to L402 paywall to monetize computing overhead."
-  },
-  {
-    id: "DISPATCH-2026-054",
-    headline: "Beyond Cloudflare: Implementing HTTP 402 with PayPal Orders v2 for Programmatic Tolls",
-    summary: "Traditional IP blocking fails against distributed residential proxy networks. Economic friction via cryptographic micro-captures forces bot operators to evaluate per-query economics.",
-    category: "BOT_WAVE",
-    severity: "ELEVATED",
-    published_at: "8 hours ago",
-    mitigation_rule: "Cryptographic HMAC Token Issuance via PayPal Orders v2",
-    impacted_channels: ["API Gateways", "Microservices"],
-    actionable_recommendation: "Issue signed HMAC bearer tokens valid for 30 minutes following confirmed PayPal micropayment."
-  },
-  {
-    id: "DISPATCH-2026-055",
-    headline: "The Agentic Economy: Preparing Merchant Checkout Rails for Autonomous AI Buyers",
-    summary: "As consumer AI shopping agents execute autonomous purchases, merchants need machine-to-machine auth protocols that handle instant tokenized checkout without 2FA human friction.",
-    category: "BOT_WAVE",
-    severity: "LOW",
-    published_at: "Yesterday",
-    mitigation_rule: "Agentic Checkout Protocol with PayPal Pre-Authorized Captures",
-    impacted_channels: ["Agentic Commerce", "Headless Checkout"],
-    actionable_recommendation: "Implement standardized RFC 402 endpoints to accept payments from autonomous multi-agent shoppers."
-  }
-];
-
-const THREAT_CATEGORIES = [
-  {
-    id: "MERCHANT_CHRONICLES",
-    name: "Merchant Chronicles",
-    shortName: "Merchant Survival",
-    icon: Shield,
-    color: "from-rose-500/20 to-rose-950/20 border-rose-500/30 text-rose-400",
-    badgeColor: "bg-rose-500/10 text-rose-400 border-rose-500/30",
-    badge: "STORE SURVIVAL",
-    description: "Real-world stories and battle-tested lessons from independent online merchants defending store margins."
-  },
-  {
-    id: "SHIPPING_LOGISTICS",
-    name: "Shipping & Logistics",
-    shortName: "Delivery Proof",
-    icon: ShieldCheck,
-    color: "from-blue-500/20 to-blue-950/20 border-blue-500/30 text-blue-400",
-    badgeColor: "bg-blue-500/10 text-blue-400 border-blue-500/30",
-    badge: "POSTAL REALITY",
-    description: "Navigating porch-pirates, postal carrier delays, and conclusive delivery scan defenses under PayPal Disputes v1."
-  },
-  {
-    id: "PAYMENTS_RAILS",
-    name: "Payments & Currency Rails",
-    shortName: "The $15 Fee",
-    icon: DollarSign,
-    color: "from-amber-500/20 to-amber-950/20 border-amber-500/30 text-amber-400",
-    badgeColor: "bg-amber-500/10 text-amber-400 border-amber-500/30",
-    badge: "FEE ECONOMICS",
-    description: "The mathematical reality of PayPal dispute fees, international currency conversion spreads, and margin protection."
-  },
-  {
-    id: "BOT_WAVE",
-    name: "The Bot Wave & AI",
-    shortName: "Monetizing Bots",
-    icon: Zap,
-    color: "from-purple-500/20 to-purple-950/20 border-purple-500/30 text-purple-400",
-    badgeColor: "bg-purple-500/10 text-purple-400 border-purple-500/30",
-    badge: "L402 PAYWALL",
-    description: "Turning unwanted AI scraping bots and crawlers into paying API consumers via PayPal Orders v2 micropayments."
-  }
-];
+// Modular Components
+import Navbar from './components/Navbar';
+import InformationHub from './components/InformationHub';
+import ProblemPage from './components/ProblemPage';
+import NewsletterPage from './components/NewsletterPage';
+import RiskRadar from './components/RiskRadar';
+import DisputeStudio from './components/DisputeStudio';
+import L402Console from './components/L402Console';
+import Copilot from './components/Copilot';
+import AuditVault from './components/AuditVault';
+import Simulator from './components/Simulator';
 
 export default function App() {
   const [activePortal, setActivePortal] = useState('hub');
+  const [activeProblemId, setActiveProblemId] = useState(null);
+
+  // Core Data State
   const [transactions, setTransactions] = useState(SAMPLE_TRANSACTIONS);
   const [selectedTx, setSelectedTx] = useState(SAMPLE_TRANSACTIONS[1]);
   const [disputes, setDisputes] = useState(INITIAL_DISPUTES);
@@ -424,34 +33,29 @@ export default function App() {
   const [isSimulating, setIsSimulating] = useState(false);
   const [submissionFeedback, setSubmissionFeedback] = useState(null);
 
-  // Copilot state
+  // Hub / View Mode State
+  const [threatViewMode, setThreatViewMode] = useState('columns');
+  const [selectedThreatCategory, setSelectedThreatCategory] = useState('ALL');
+
+  // Newsletter State
+  const [newsletterEmail, setNewsletterEmail] = useState("");
+  const [newsletterFrequency, setNewsletterFrequency] = useState('DAILY');
+  const [newsletterSuccess, setNewsletterSuccess] = useState(false);
+  const [newsletterSubResult, setNewsletterSubResult] = useState(null);
+
+  // Copilot State
   const [copilotQuery, setCopilotQuery] = useState("");
   const [copilotLoading, setCopilotLoading] = useState(false);
   const [copilotHistory, setCopilotHistory] = useState([
     {
       sender: "copilot",
       text: "Welcome to PayShield Copilot. I analyze transaction risk scores, explain SHAP feature attributions, and compute dispute viability against PayPal's $15 fee equation. How can I help you today?",
-      suggestion: "TRY_DISPUTE_INQUIRY",
       evidence: ["Pre-Capture Calibrated Risk", "Dispute ROI Engine ($15 fee)", "L402 Agentic Protocol"]
     }
   ]);
 
-  // Threat Desk & L402 State
-  const [threatViewMode, setThreatViewMode] = useState('columns'); // 'columns' | 'stream' | 'terminal'
-  const [selectedThreatCategory, setSelectedThreatCategory] = useState('ALL');
-  const [newsletterFrequency, setNewsletterFrequency] = useState('DAILY');
-  const [newsletterCategories, setNewsletterCategories] = useState([
-    'MERCHANT_CHRONICLES',
-    'SHIPPING_LOGISTICS',
-    'PAYMENTS_RAILS',
-    'BOT_WAVE'
-  ]);
-  const [newsletterEmail, setNewsletterEmail] = useState("");
-  const [newsletterSuccess, setNewsletterSuccess] = useState(false);
-  const [newsletterSubResult, setNewsletterSubResult] = useState(null);
-
-  // L402 Machine-to-Machine Simulator State
-  const [l402Step, setL402Step] = useState(0); // 0: unauthenticated, 1: 402 challenge, 2: paid/bearer token, 3: feed unlocked
+  // L402 Machine-to-Machine State
+  const [l402Step, setL402Step] = useState(0);
   const [l402TerminalLoading, setL402TerminalLoading] = useState(false);
   const [l402Challenge, setL402Challenge] = useState(null);
   const [l402PaymentResult, setL402PaymentResult] = useState(null);
@@ -461,8 +65,8 @@ export default function App() {
   // Fetch threat bulletins on mount
   useEffect(() => {
     fetch('/api/v1/threats')
-      .then(res => res.json())
-      .then(data => {
+      .then((res) => res.json())
+      .then((data) => {
         if (Array.isArray(data) && data.length > 0) {
           setThreatNews(data);
         }
@@ -545,7 +149,7 @@ export default function App() {
       setTransactions([newEntry, ...transactions]);
       setSelectedTx(newEntry);
     } catch (e) {
-      console.warn("API proxy fallback, using local model evaluation", e);
+      console.warn("API proxy fallback", e);
     } finally {
       setIsSimulating(false);
     }
@@ -558,7 +162,7 @@ export default function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           evidence_type: "PROOF_OF_DELIVERY",
-          notes: `Tracking proof: ${dispute.tracking}. Order fulfilled per PayPal Seller Protection.`
+          notes: `Tracking proof: ${dispute.tracking}. Fulfilled per PayPal Seller Protection.`
         })
       });
       setSubmissionFeedback(`Submitted to PayPal Disputes API: Dispute ${dispute.dispute_id} evidence acknowledged.`);
@@ -622,6 +226,17 @@ export default function App() {
     setTimeout(() => setSubmissionFeedback(null), 6000);
   };
 
+  const handleSelectProblem = (catId) => {
+    setActiveProblemId(catId);
+    setActivePortal('problem');
+  };
+
+  const handleOpenNewsletter = () => {
+    setActivePortal('newsletter');
+    setActiveProblemId(null);
+  };
+
+  // L402 Gateway Handlers
   const handleL402FetchChallenge = async () => {
     setL402TerminalLoading(true);
     try {
@@ -641,14 +256,6 @@ export default function App() {
             title: "Access Single Threat Vector Intel",
             amount: 0.05,
             currency: "USD",
-            payment_methods: ["paypal"]
-          },
-          {
-            id: "all_threats_monthly",
-            title: "Autonomous Agent Monthly Feed License",
-            amount: 0.25,
-            currency: "USD",
-            type: "subscription",
             payment_methods: ["paypal"]
           }
         ]
@@ -720,6 +327,7 @@ export default function App() {
     setL402UnlockedData(null);
   };
 
+  // Newsletter Subscription
   const handleNewsletterSubmit = async (e) => {
     e.preventDefault();
     if (!newsletterEmail.trim()) return;
@@ -729,8 +337,7 @@ export default function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: newsletterEmail,
-          frequency: newsletterFrequency,
-          categories: newsletterCategories
+          frequency: newsletterFrequency
         })
       });
       const data = await res.json();
@@ -744,159 +351,41 @@ export default function App() {
         email: newsletterEmail,
         frequency: newsletterFrequency,
         status: "ACTIVE",
-        message: `Successfully subscribed ${newsletterEmail} to PayShield Merchant Threat Dispatch (${newsletterFrequency}).`
+        message: `Successfully subscribed ${newsletterEmail} to The PayShield Merchant Dispatch (${newsletterFrequency}).`
       });
       setNewsletterSuccess(true);
       setNewsletterEmail("");
-      setTimeout(() => setNewsletterSuccess(false), 8000);
     }
   };
 
-
   const handleExportAuditJson = () => {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(transactions, null, 2));
-    const downloadAnchor = document.createElement('a');
-    downloadAnchor.setAttribute("href", dataStr);
-    downloadAnchor.setAttribute("download", `payshield_audit_ledger_${Date.now()}.json`);
-    document.body.appendChild(downloadAnchor);
-    downloadAnchor.click();
-    downloadAnchor.remove();
+    const jsonStr = JSON.stringify(transactions, null, 2);
+    const blob = new Blob([jsonStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `payshield_cryptographic_audit_ledger_${Date.now()}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
   };
 
+  // Active Category Object for Problem Page
+  const currentCategoryObj = THREAT_CATEGORIES.find((c) => c.id === activeProblemId) || THREAT_CATEGORIES[0];
+
   return (
-    <div className="min-h-screen bg-[#f4f5f7] text-[#111827] flex flex-col font-sans">
-      {/* Newspaper Masthead Banner */}
-      <header className="bg-[#1f242d] text-white px-8 py-5 border-b border-gray-800 shadow-md">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3.5">
-            <div className="bg-[#003087] p-2.5 rounded-lg flex items-center justify-center shadow-md">
-              <Shield className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <div className="flex items-center gap-3">
-                <h1 className="text-2xl font-black tracking-tight text-white font-sans">PayShield Information Hub</h1>
-                <span className="text-[11px] bg-blue-500/20 text-blue-300 border border-blue-400/30 px-2.5 py-0.5 rounded-full font-mono font-medium">
-                  PayPal AI Hackathon 2026
-                </span>
-              </div>
-              <p className="text-xs text-gray-300 mt-0.5">
-                Real-Time Merchant Intelligence &amp; Autonomous Dispute Protection • Certified IEEE-CIS Benchmark
-              </p>
-            </div>
-          </div>
+    <div className="min-h-screen bg-[#f4f5f7] text-gray-900 flex flex-col font-sans">
+      {/* Top Umbrella Masthead & Navigation */}
+      <Navbar
+        activePortal={activePortal}
+        setActivePortal={setActivePortal}
+        activeProblemId={activeProblemId}
+        setActiveProblemId={setActiveProblemId}
+        onSimulate={handleSimulate}
+        isSimulating={isSimulating}
+      />
 
-          {/* Global Key Metrics in Masthead */}
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2 bg-gray-900/80 border border-gray-700 px-3 py-1.5 rounded-lg">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              <span className="text-xs font-mono text-gray-200">PayPal Sandbox Connected</span>
-            </div>
-            <div className="text-right border-l border-gray-700 pl-4">
-              <div className="text-[11px] text-gray-400">Protected Volume</div>
-              <div className="text-sm font-bold text-white font-mono">$142,850.00</div>
-            </div>
-            <div className="text-right border-l border-gray-700 pl-4">
-              <div className="text-[11px] text-gray-400">Dispute Net ROI</div>
-              <div className="text-sm font-bold text-emerald-400 font-mono">+$1,480.20</div>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* 2-Pillar Navigation Bar */}
-      <nav className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-40 px-8 py-2.5">
-        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            {/* Pillar 1: PayShield Information Hub */}
-            <button
-              onClick={() => setActivePortal('hub')}
-              className={`px-4 py-2 rounded-md text-xs font-bold transition flex items-center gap-2 ${
-                activePortal === 'hub' || activePortal === 'threats'
-                  ? 'bg-[#1f242d] text-white shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-              }`}
-            >
-              <Newspaper className="w-4 h-4 text-blue-500" />
-              <span>PayShield Information Hub</span>
-              <span className="px-2 py-0.5 bg-blue-100 text-blue-800 text-[10px] rounded-full font-mono font-semibold">
-                4 Columns Live
-              </span>
-            </button>
-
-            {/* Pillar 2: Merchant Risk & Dispute Radar */}
-            <button
-              onClick={() => setActivePortal('radar')}
-              className={`px-4 py-2 rounded-md text-xs font-bold transition flex items-center gap-2 ${
-                activePortal === 'radar' || activePortal === 'disputes'
-                  ? 'bg-[#1f242d] text-white shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-              }`}
-            >
-              <Activity className="w-4 h-4 text-emerald-500" />
-              <span>Merchant Risk &amp; Dispute Radar</span>
-              <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 text-[10px] rounded-full font-mono font-semibold">
-                IEEE-CIS • $15 EV
-              </span>
-            </button>
-
-            {/* Divider */}
-            <div className="h-5 w-px bg-gray-200 mx-1"></div>
-
-            {/* Secondary Utilities */}
-            <button
-              onClick={() => setActivePortal('copilot')}
-              className={`px-3 py-1.5 rounded-md text-xs font-medium transition flex items-center gap-1.5 ${
-                activePortal === 'copilot'
-                  ? 'bg-gray-800 text-white'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-              }`}
-            >
-              <Bot className="w-3.5 h-3.5 text-blue-600" />
-              AI Risk Copilot
-            </button>
-            <button
-              onClick={() => setActivePortal('audit')}
-              className={`px-3 py-1.5 rounded-md text-xs font-medium transition flex items-center gap-1.5 ${
-                activePortal === 'audit'
-                  ? 'bg-gray-800 text-white'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-              }`}
-            >
-              <Database className="w-3.5 h-3.5 text-gray-500" />
-              Audit Ledger
-            </button>
-          </div>
-
-          {/* Quick Simulator Bar */}
-          <div className="flex items-center gap-2">
-            <span className="text-[11px] text-gray-500 font-medium hidden sm:inline">Inject Live Telemetry:</span>
-            <button
-              onClick={() => handleSimulate('LEGIT')}
-              disabled={isSimulating}
-              className="text-[11px] bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-300 font-medium px-2.5 py-1 rounded transition"
-            >
-              Normal Buyer
-            </button>
-            <button
-              onClick={() => handleSimulate('CARDING')}
-              disabled={isSimulating}
-              className="text-[11px] bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-300 font-medium px-2.5 py-1 rounded transition"
-            >
-              Carding Burst
-            </button>
-            <button
-              onClick={() => handleSimulate('FX_MANIP')}
-              disabled={isSimulating}
-              className="text-[11px] bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-300 font-medium px-2.5 py-1 rounded transition"
-            >
-              Cross-Border FX
-            </button>
-          </div>
-        </div>
-      </nav>
-
-      {/* Main Content Area */}
-      <main className="flex-1 p-8 overflow-auto">
+      {/* Main Container */}
+      <main className="flex-1 p-6 md:p-8 overflow-auto">
         {submissionFeedback && (
           <div className="mb-6 max-w-7xl mx-auto bg-emerald-50 border border-emerald-300 text-emerald-900 px-4 py-3 rounded-lg flex items-center justify-between text-xs shadow-sm">
             <div className="flex items-center gap-2">
@@ -909,1187 +398,114 @@ export default function App() {
           </div>
         )}
 
-        {/* PILLAR 2: MERCHANT RISK & DISPUTE RADAR */}
-        {(activePortal === 'radar' || activePortal === 'disputes') && (
-          <div className="space-y-6 max-w-7xl mx-auto">
-            {/* IEEE-CIS Benchmark Alignment Banner */}
-            <div className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-lg bg-blue-50 text-blue-600 border border-blue-100 shrink-0">
-                  <ShieldCheck className="w-5 h-5 text-blue-600" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wider">
-                      IEEE-CIS / Vesta Benchmark Standard (E-Commerce Fraud)
-                    </h3>
-                    <span className="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded font-mono font-medium">
-                      Trained &amp; Platt Calibrated
-                    </span>
-                  </div>
-                  <p className="text-xs text-gray-600 mt-0.5">
-                    Production LightGBM pipeline trained on 25,000 tabular transactions (5,000 holdout test set) with mathematically verified SHAP TreeExplainer attributions.
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 text-xs font-mono shrink-0">
-                <div className="bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-lg text-center">
-                  <div className="text-[10px] text-gray-500 font-sans">ROC-AUC</div>
-                  <div className="font-bold text-emerald-600">1.0000</div>
-                </div>
-                <div className="bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-lg text-center">
-                  <div className="text-[10px] text-gray-500 font-sans">Brier Score</div>
-                  <div className="font-bold text-blue-600">0.0007</div>
-                </div>
-                <div className="bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-lg text-center">
-                  <div className="text-[10px] text-gray-500 font-sans">SHAP Additivity</div>
-                  <div className="font-bold text-purple-600">Δ &lt; 10⁻⁴</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Ingestion & SHAP Waterfall Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-              {/* Left Column: Transaction Feed (5 cols) */}
-              <div className="lg:col-span-5 bg-white border border-gray-200 rounded-lg shadow-sm p-5 flex flex-col h-[750px]">
-                <div className="flex items-center justify-between pb-3 border-b border-gray-200 mb-3">
-                  <div className="flex items-center gap-2">
-                    <Activity className="w-4 h-4 text-blue-600" />
-                    <h2 className="text-xs font-bold uppercase tracking-wider text-gray-800">
-                      Live PayPal Order Ingestion ({transactions.length})
-                    </h2>
-                  </div>
-                  <span className="text-[11px] text-gray-500 font-mono">Cost Optimal: 0.40</span>
-                </div>
-
-                <div className="flex-1 overflow-y-auto space-y-2 pr-1">
-                  {transactions.map((tx) => {
-                    const isSelected = selectedTx?.transaction_id === tx.transaction_id;
-                    let badgeColor = "bg-emerald-50 text-emerald-700 border-emerald-200";
-                    if (tx.action === "BLOCK_AND_FLAG_DISPUTE") {
-                      badgeColor = "bg-rose-50 text-rose-700 border-rose-200";
-                    } else if (tx.action === "STEP_UP_VERIFICATION") {
-                      badgeColor = "bg-amber-50 text-amber-700 border-amber-200";
-                    } else if (tx.action === "ALLOW_WITH_MONITORING") {
-                      badgeColor = "bg-blue-50 text-blue-700 border-blue-200";
-                    }
-
-                    return (
-                      <div
-                        key={tx.transaction_id}
-                        onClick={() => setSelectedTx(tx)}
-                        className={`p-3.5 rounded-lg border cursor-pointer transition ${
-                          isSelected
-                            ? 'bg-blue-50/70 border-blue-400 shadow-sm'
-                            : 'bg-gray-50/60 border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between mb-1.5">
-                          <span className="font-mono text-xs font-bold text-gray-900">{tx.transaction_id}</span>
-                          <span className="text-[11px] text-gray-500">{tx.timestamp}</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <div className="text-sm font-bold text-gray-900">${tx.amount_usd.toFixed(2)} USD</div>
-                            <div className="text-xs text-gray-500 truncate max-w-[180px]">{tx.buyer_email}</div>
-                          </div>
-                          <div className="text-right">
-                            <span className={`text-[10px] font-mono font-medium px-2 py-0.5 rounded border ${badgeColor}`}>
-                              {tx.action}
-                            </span>
-                            <div className="text-xs font-mono text-gray-600 mt-1">
-                              Score: <span className="font-bold text-gray-900">{tx.risk_score}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Right Column: Deep Risk & SHAP Inspector (7 cols) */}
-              <div className="lg:col-span-7 bg-white border border-gray-200 rounded-lg shadow-sm p-6 flex flex-col h-[750px] overflow-y-auto">
-                {selectedTx ? (
-                  <>
-                    <div className="flex items-center justify-between pb-4 border-b border-gray-200">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h2 className="text-lg font-bold text-gray-900 font-mono">{selectedTx.transaction_id}</h2>
-                          <span className="text-[11px] px-2 py-0.5 rounded bg-gray-100 text-gray-700 font-mono border border-gray-200">
-                            {selectedTx.rule_triggered}
-                          </span>
-                        </div>
-                        <p className="text-xs text-gray-500 mt-0.5">Buyer: {selectedTx.buyer_email}</p>
-                      </div>
-
-                      <div className="text-right">
-                        <div className="text-[11px] text-gray-500 uppercase tracking-wider font-semibold">Calibrated Risk Score</div>
-                        <div className="text-3xl font-extrabold font-mono text-gray-900">
-                          {selectedTx.risk_score}
-                          <span className="text-sm text-gray-500 font-normal"> / 100</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Cryptographic Additivity Seal */}
-                    <div className="mt-4 bg-emerald-50/70 border border-emerald-200 rounded-lg p-3.5 flex items-start gap-3">
-                      <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
-                      <div className="text-xs flex-1">
-                        <div className="flex items-center justify-between">
-                          <span className="font-bold text-emerald-900 uppercase tracking-wider text-[11px]">
-                            Cryptographic SHAP Additivity Seal Verified
-                          </span>
-                          <span className="font-mono text-emerald-700 font-semibold text-[11px]">
-                            Δ = {selectedTx.additivity_verification.delta.toFixed(6)} &lt; 10⁻⁴
-                          </span>
-                        </div>
-                        <p className="text-gray-700 mt-1">
-                          Invariant: Base bias ({selectedTx.additivity_verification.base_bias}) + Σ SHAP (
-                          {selectedTx.additivity_verification.shap_sum}) = Prediction Margin. Grounded tree nodes; zero LLM hallucinations.
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Extracted Feature Signals */}
-                    <div className="mt-5">
-                      <h3 className="text-[11px] font-bold uppercase tracking-wider text-gray-600 mb-2">
-                        Extracted Feature Signals
-                      </h3>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                        <div className="bg-gray-50 border border-gray-200 p-2.5 rounded-lg">
-                          <div className="text-[11px] text-gray-500">Amount Z-Score</div>
-                          <div className="text-sm font-mono font-bold text-gray-900">
-                            {selectedTx.features.amount_zscore.toFixed(2)}σ
-                          </div>
-                        </div>
-                        <div className="bg-gray-50 border border-gray-200 p-2.5 rounded-lg">
-                          <div className="text-[11px] text-gray-500">Velocity (1h / 24h)</div>
-                          <div className="text-sm font-mono font-bold text-gray-900">
-                            {selectedTx.features.velocity_1h} / {selectedTx.features.velocity_24h}
-                          </div>
-                        </div>
-                        <div className="bg-gray-50 border border-gray-200 p-2.5 rounded-lg">
-                          <div className="text-[11px] text-gray-500">Geo Discrepancy</div>
-                          <div className={`text-sm font-mono font-bold ${selectedTx.features.geo_mismatch > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
-                            {selectedTx.features.geo_mismatch > 0 ? 'MISMATCH (FLAGGED)' : 'MATCHED'}
-                          </div>
-                        </div>
-                        <div className="bg-gray-50 border border-gray-200 p-2.5 rounded-lg">
-                          <div className="text-[11px] text-gray-500">FX Spread Dev.</div>
-                          <div className="text-sm font-mono font-bold text-gray-900">
-                            {(selectedTx.features.fx_spread * 100).toFixed(2)}%
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* SHAP Tree Attribution Waterfall */}
-                    <div className="mt-6 flex-1">
-                      <div className="flex items-center justify-between mb-3">
-                        <h3 className="text-[11px] font-bold uppercase tracking-wider text-gray-600">
-                          TreeExplainer Feature Attributions (SHAP)
-                        </h3>
-                        <span className="text-[11px] text-gray-500">Positive = Pushes Risk Up | Negative = Suppresses Risk</span>
-                      </div>
-
-                      <div className="space-y-2.5">
-                        {selectedTx.shap_contributions.map((item, idx) => {
-                          const isRisk = item.shap_value > 0;
-                          return (
-                            <div key={idx} className="bg-gray-50 border border-gray-200 p-3 rounded-lg">
-                              <div className="flex items-center justify-between text-xs mb-1.5">
-                                <span className="font-mono font-semibold text-gray-900">{item.feature}</span>
-                                <div className="flex items-center gap-2">
-                                  <span className={`font-mono font-bold ${isRisk ? 'text-rose-600' : 'text-emerald-600'}`}>
-                                    {isRisk ? `+${item.shap_value.toFixed(4)}` : item.shap_value.toFixed(4)}
-                                  </span>
-                                  <span className="text-gray-500 font-mono">({item.contribution_pct}%)</span>
-                                </div>
-                              </div>
-                              <div className="w-full bg-gray-200 h-1.5 rounded-full overflow-hidden flex">
-                                {isRisk ? (
-                                  <div
-                                    className="bg-rose-500 h-full rounded-full transition-all"
-                                    style={{ width: `${Math.min(100, item.contribution_pct)}%` }}
-                                  ></div>
-                                ) : (
-                                  <div
-                                    className="bg-emerald-500 h-full rounded-full transition-all"
-                                    style={{ width: `${Math.min(100, item.contribution_pct)}%` }}
-                                  ></div>
-                                )}
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    {/* Cross-Link Action to Copilot */}
-                    <div className="mt-4 pt-3 border-t border-gray-200 flex items-center justify-between">
-                      <div className="flex items-center gap-1.5 text-[11px] text-gray-500">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                        <span>Certified Platt Calibrated Probability &amp; SHAP Additivity Seal</span>
-                      </div>
-                      <button
-                        onClick={() => handleAskCopilot(`Explain transaction ${selectedTx.transaction_id} ($${selectedTx.amount_usd} USD, Action: ${selectedTx.action}, Risk Score: ${selectedTx.risk_score}%). Why was this decision chosen and what are the primary feature contributors?`)}
-                        className="bg-gray-900 hover:bg-black text-white px-3.5 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1.5 shadow-sm"
-                      >
-                        <Bot className="w-3.5 h-3.5" />
-                        Consult Copilot
-                      </button>
-                    </div>
-                  </>
-                ) : (
-                  <div className="h-full flex items-center justify-center text-gray-400">
-                    Select a transaction to inspect SHAP attributions
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Autonomous Dispute Studio & $15 Fee Recovery Queue */}
-            <div className="space-y-6 pt-4 border-t border-gray-200">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-white border border-gray-200 p-5 rounded-lg shadow-sm">
-                  <div className="text-[11px] text-gray-500 uppercase font-semibold">PayPal Dispute Fee Standard</div>
-                  <div className="text-2xl font-bold font-mono text-gray-900 mt-1">$15.00 USD</div>
-                  <p className="text-xs text-gray-500 mt-1">Non-refundable fee assessed by PayPal on contested claims.</p>
-                </div>
-                <div className="bg-white border border-gray-200 p-5 rounded-lg shadow-sm">
-                  <div className="text-[11px] text-gray-500 uppercase font-semibold">Autonomous Recovery Model</div>
-                  <div className="text-base font-bold font-mono text-emerald-700 mt-1">
-                    Expected EV = (P_win × Amount) - $15.00
-                  </div>
-                  <p className="text-xs text-gray-500 mt-1">Automatically writes off negative EV disputes to protect merchant funds.</p>
-                </div>
-                <div className="bg-white border border-gray-200 p-5 rounded-lg shadow-sm">
-                  <div className="text-[11px] text-gray-500 uppercase font-semibold">Net Active Recovery ROI</div>
-                  <div className="text-2xl font-bold font-mono text-emerald-700 mt-1">+$147.30 Net EV</div>
-                  <p className="text-xs text-gray-500 mt-1">3 disputes analyzed; 1 auto-written off, 2 defended.</p>
-                </div>
-              </div>
-
-              <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
-                <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-gray-900 flex items-center gap-2">
-                    <DollarSign className="w-4 h-4 text-emerald-600" />
-                    PayPal Disputes Recovery Queue (Autonomous $15 Fee Engine)
-                  </h3>
-                  <span className="text-xs text-gray-500 font-mono">Cost Optimal Cutoff: 0.40</span>
-                </div>
-
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse text-xs">
-                    <thead>
-                      <tr className="border-b border-gray-200 text-gray-600 uppercase tracking-wider font-semibold bg-gray-50">
-                        <th className="py-3 px-4">Dispute ID</th>
-                        <th className="py-3 px-4">Amount</th>
-                        <th className="py-3 px-4">Win Prob (P_win)</th>
-                        <th className="py-3 px-4">Expected Net EV</th>
-                        <th className="py-3 px-4">Optimized Action</th>
-                        <th className="py-3 px-4">Evidence Status</th>
-                        <th className="py-3 px-4 text-right">PayPal Action</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100 font-mono">
-                      {disputes.map((d) => {
-                        const isNegative = d.expected_net_recovery <= 0;
-                        return (
-                          <tr key={d.dispute_id} className="hover:bg-gray-50 transition">
-                            <td className="py-3.5 px-4 font-bold text-gray-900">
-                              {d.dispute_id}
-                              <div className="text-[11px] text-gray-500 font-normal">{d.reason}</div>
-                            </td>
-                            <td className="py-3.5 px-4 text-gray-900 font-semibold">
-                              ${d.amount_usd.toFixed(2)}
-                            </td>
-                            <td className="py-3.5 px-4">
-                              <span className={`px-2 py-0.5 rounded font-bold ${d.win_probability >= 0.6 ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>
-                                {(d.win_probability * 100).toFixed(0)}%
-                              </span>
-                            </td>
-                            <td className="py-3.5 px-4">
-                              <span className={`font-bold ${isNegative ? 'text-rose-600' : 'text-emerald-700'}`}>
-                                {isNegative ? '' : '+'}${d.expected_net_recovery.toFixed(2)}
-                              </span>
-                            </td>
-                            <td className="py-3.5 px-4">
-                              <span className={`px-2 py-0.5 rounded border text-[11px] ${
-                                d.action === 'PROCEED_DIRECT_DISPUTE'
-                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                                  : d.action === 'AUTO_WRITE_OFF_UNECONOMIC'
-                                  ? 'bg-rose-50 text-rose-700 border-rose-200'
-                                  : 'bg-amber-50 text-amber-700 border-amber-200'
-                              }`}>
-                                {d.action}
-                              </span>
-                            </td>
-                            <td className="py-3.5 px-4 text-gray-600 font-sans text-xs">
-                              {d.tracking}
-                            </td>
-                            <td className="py-3.5 px-4 text-right font-sans">
-                              <div className="flex items-center justify-end gap-2">
-                                <button
-                                  onClick={() =>
-                                    handleAskCopilot(
-                                      `Evaluate the recovery economics for PayPal dispute ${d.dispute_id} (Claim Amount: $${d.amount_usd.toFixed(2)}, Reason: "${d.reason}", P_win: ${(d.win_probability * 100).toFixed(0)}%). Why did PayShield prescribe ${d.action} against the $15.00 non-refundable dispute fee?`
-                                    )
-                                  }
-                                  className="bg-white hover:bg-gray-100 text-gray-700 border border-gray-300 p-1.5 rounded transition flex items-center gap-1 text-[11px]"
-                                  title="Ask Copilot for mathematical breakdown"
-                                >
-                                  <Bot className="w-3.5 h-3.5 text-blue-600" />
-                                  <span className="hidden sm:inline">Copilot</span>
-                                </button>
-                                {d.action === 'PROCEED_DIRECT_DISPUTE' && d.status !== 'SUBMITTED_TO_PAYPAL' ? (
-                                  <button
-                                    onClick={() => handleDisputeSubmit(d)}
-                                    className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-3 py-1.5 rounded transition inline-flex items-center gap-1.5 text-xs shadow-sm"
-                                  >
-                                    <Send className="w-3 h-3" />
-                                    Submit
-                                  </button>
-                                ) : d.status === 'SUBMITTED_TO_PAYPAL' ? (
-                                  <span className="text-emerald-700 font-medium inline-flex items-center gap-1 text-xs">
-                                    <CheckCircle2 className="w-3 h-3" />
-                                    Transmitted
-                                  </span>
-                                ) : (
-                                  <span className="text-gray-400 text-xs italic">
-                                    Closed (Saved $15)
-                                  </span>
-                                )}
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </div>
+        {/* 1. UMBRELLA DESK (4 COLUMNS) */}
+        {activePortal === 'hub' && (
+          <InformationHub
+            threatNews={threatNews}
+            threatCategories={THREAT_CATEGORIES}
+            threatViewMode={threatViewMode}
+            setThreatViewMode={setThreatViewMode}
+            selectedThreatCategory={selectedThreatCategory}
+            setSelectedThreatCategory={setSelectedThreatCategory}
+            onDeployMitigation={handleDeployMitigation}
+            onAskCopilot={handleAskCopilot}
+            onSelectProblem={handleSelectProblem}
+            onOpenNewsletter={handleOpenNewsletter}
+          />
         )}
 
-        {/* PILLAR 1: PAYSHIELD INFORMATION HUB */}
-        {(activePortal === 'hub' || activePortal === 'threats') && (
-          <div className="space-y-6 max-w-7xl mx-auto">
-            {/* Top Control Header & View Mode Switcher */}
-            <div className="bg-white border border-gray-200 p-4 rounded-lg shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-blue-600 animate-pulse"></span>
-                  <h2 className="text-sm font-bold text-gray-900 tracking-tight flex items-center gap-2">
-                    PayShield Information Hub • Real-Time Merchant Dispatch
-                    <span className="text-[10px] bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded-full font-mono font-medium">
-                      Live Telemetry • 4 Columns Active
-                    </span>
-                  </h2>
-                </div>
-                <p className="text-xs text-gray-600">
-                  Operational merchant stories, postal carrier delivery logistics, the non-refundable $15 fee reality, and autonomous L402 bot monetization.
-                </p>
-              </div>
-
-              {/* View Switcher Pills */}
-              <div className="flex items-center bg-gray-100 border border-gray-200 p-1 rounded-lg shrink-0">
-                <button
-                  onClick={() => setThreatViewMode('columns')}
-                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition flex items-center gap-1.5 ${
-                    threatViewMode === 'columns'
-                      ? 'bg-white text-gray-900 shadow-sm font-semibold'
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
-                  title="Category Columns Desk View"
-                >
-                  <Columns3 className="w-3.5 h-3.5" />
-                  Editorial Columns
-                </button>
-                <button
-                  onClick={() => setThreatViewMode('stream')}
-                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition flex items-center gap-1.5 ${
-                    threatViewMode === 'stream'
-                      ? 'bg-white text-gray-900 shadow-sm font-semibold'
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
-                  title="Consolidated Stream Feed"
-                >
-                  <List className="w-3.5 h-3.5" />
-                  Stream Feed
-                </button>
-                <button
-                  onClick={() => setThreatViewMode('terminal')}
-                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition flex items-center gap-1.5 ${
-                    threatViewMode === 'terminal'
-                      ? 'bg-white text-purple-700 shadow-sm font-semibold'
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
-                  title="Interactive L402 Agentic Protocol Terminal"
-                >
-                  <Terminal className="w-3.5 h-3.5" />
-                  L402 Agent Console
-                  <span className="text-[10px] bg-purple-100 text-purple-800 border border-purple-200 px-1.5 py-0.2 rounded font-mono font-bold">
-                    HTTP 402
-                  </span>
-                </button>
-              </div>
-            </div>
-
-            {/* VIEW 1: CATEGORY COLUMNS DESK */}
-            {threatViewMode === 'columns' && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {THREAT_CATEGORIES.map((cat) => {
-                  const Icon = cat.icon;
-                  const catArticles = threatNews.filter((n) => n.category === cat.id);
-
-                  return (
-                    <div
-                      key={cat.id}
-                      className="bg-white border border-gray-200 rounded-lg shadow-sm p-5 flex flex-col min-h-[750px]"
-                    >
-                      {/* Newspaper Column Heading */}
-                      <div className="pb-3 mb-4 border-b-2 border-gray-900">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <Icon className="w-4 h-4 text-gray-900" />
-                            <h3 className="text-base font-bold text-gray-900 uppercase tracking-wide">
-                              {cat.shortName}
-                            </h3>
-                          </div>
-                          <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-gray-100 text-gray-700 border border-gray-200">
-                            {catArticles.length} Bulletins
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-gray-500 mt-1 line-clamp-2 leading-snug">
-                          {cat.description}
-                        </p>
-                      </div>
-
-                      {/* Column Articles Stacked List */}
-                      <div className="divide-y divide-gray-100 space-y-4 flex-1 overflow-y-auto pr-1">
-                        {catArticles.length > 0 ? (
-                          catArticles.map((news, idx) => (
-                            <article
-                              key={news.id}
-                              className={`flex flex-col justify-between ${idx > 0 ? 'pt-4' : ''} space-y-2.5`}
-                            >
-                              <div className="space-y-1.5">
-                                <div className="flex items-center justify-between">
-                                  <span
-                                    className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded border ${
-                                      news.severity === 'CRITICAL'
-                                        ? 'bg-rose-50 text-rose-700 border-rose-200'
-                                        : news.severity === 'ELEVATED'
-                                        ? 'bg-amber-50 text-amber-700 border-amber-200'
-                                        : 'bg-blue-50 text-blue-700 border-blue-200'
-                                    }`}
-                                  >
-                                    {news.severity}
-                                  </span>
-                                  <span className="text-[11px] text-gray-400 font-sans">
-                                    {news.published_at.includes('T') ? news.published_at.substring(0, 10) : news.published_at}
-                                  </span>
-                                </div>
-                                <h4 className="text-sm font-bold text-gray-900 leading-snug hover:text-blue-600 transition cursor-pointer">
-                                  {news.headline}
-                                </h4>
-                                <p className="text-xs text-gray-600 leading-relaxed line-clamp-3">
-                                  {news.summary}
-                                </p>
-                              </div>
-
-                              {/* Impacted Channels */}
-                              {news.impacted_channels && (
-                                <div className="flex flex-wrap gap-1">
-                                  {news.impacted_channels.map((ch, i) => (
-                                    <span
-                                      key={i}
-                                      className="text-[9px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded font-mono border border-gray-200"
-                                    >
-                                      {ch}
-                                    </span>
-                                  ))}
-                                </div>
-                              )}
-
-                              {/* Active PayShield Mitigation */}
-                              <div className="bg-gray-50 border border-gray-200 p-2.5 rounded text-xs space-y-1">
-                                <div className="text-[10px] font-semibold text-blue-700 uppercase tracking-wide">
-                                  Mitigation Protocol:
-                                </div>
-                                <div className="font-mono text-gray-800 text-[11px] leading-tight">
-                                  {news.mitigation_rule}
-                                </div>
-                              </div>
-
-                              {/* Action Footer */}
-                              <div className="pt-2 border-t border-gray-100 flex items-center justify-between gap-1">
-                                <button
-                                  onClick={() => handleDeployMitigation(news.mitigation_rule)}
-                                  className="bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 px-2 py-1 rounded text-[10px] font-medium transition flex items-center gap-1"
-                                  title="Deploy to Live Decision Radar"
-                                >
-                                  <ShieldCheck className="w-3 h-3" />
-                                  Deploy Rule
-                                </button>
-                                <button
-                                  onClick={() =>
-                                    handleAskCopilot(
-                                      `Analyze threat vector "${news.headline}" (${news.category}, Severity: ${news.severity}). How does PayShield's mitigation rule "${news.mitigation_rule}" protect merchant margins and prevent PayPal chargebacks?`
-                                    )
-                                  }
-                                  className="text-gray-600 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 border border-gray-200 px-2 py-1 rounded text-[10px] font-medium transition flex items-center gap-1"
-                                  title="Analyze with AI Risk Copilot"
-                                >
-                                  <Bot className="w-3 h-3" />
-                                  Copilot
-                                </button>
-                              </div>
-                            </article>
-                          ))
-                        ) : (
-                          <div className="h-full flex items-center justify-center text-xs text-gray-400 p-4 text-center">
-                            No active zero-day alerts for this vector.
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-
-            {/* VIEW 2: CONSOLIDATED STREAM FEED */}
-            {threatViewMode === 'stream' && (
-              <div className="space-y-4">
-                {/* Category Filter Pills */}
-                <div className="flex flex-wrap items-center gap-1.5 pb-2 border-b border-gray-200">
-                  <button
-                    onClick={() => setSelectedThreatCategory('ALL')}
-                    className={`px-3 py-1 rounded-full text-xs font-medium transition ${
-                      selectedThreatCategory === 'ALL'
-                        ? 'bg-gray-900 text-white'
-                        : 'bg-white text-gray-600 hover:text-gray-900 border border-gray-200'
-                    }`}
-                  >
-                    All Vectors ({threatNews.length})
-                  </button>
-                  {THREAT_CATEGORIES.map((c) => (
-                    <button
-                      key={c.id}
-                      onClick={() => setSelectedThreatCategory(c.id)}
-                      className={`px-3 py-1 rounded-full text-xs font-medium transition ${
-                        selectedThreatCategory === c.id
-                          ? 'bg-gray-900 text-white'
-                          : 'bg-white text-gray-600 hover:text-gray-900 border border-gray-200'
-                      }`}
-                    >
-                      {c.shortName}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Articles Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {threatNews
-                    .filter((n) => selectedThreatCategory === 'ALL' || n.category === selectedThreatCategory)
-                    .map((news) => (
-                      <div
-                        key={news.id}
-                        className="bg-white border border-gray-200 rounded-lg p-5 flex flex-col justify-between shadow-sm hover:border-gray-300 transition"
-                      >
-                        <div>
-                          <div className="flex items-center justify-between mb-2">
-                            <span
-                              className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border ${
-                                news.severity === 'CRITICAL'
-                                  ? 'bg-rose-50 text-rose-700 border-rose-200'
-                                  : news.severity === 'ELEVATED'
-                                  ? 'bg-amber-50 text-amber-700 border-amber-200'
-                                  : 'bg-blue-50 text-blue-700 border-blue-200'
-                              }`}
-                            >
-                              {news.severity} • {news.category}
-                            </span>
-                            <span className="text-[11px] text-gray-400 font-sans">
-                              {news.published_at.includes('T') ? news.published_at.substring(0, 10) : news.published_at}
-                            </span>
-                          </div>
-                          <h3 className="font-bold text-gray-900 text-base leading-snug">{news.headline}</h3>
-                          <p className="text-xs text-gray-600 mt-2 leading-relaxed">{news.summary}</p>
-                        </div>
-
-                        <div className="mt-4 pt-3 border-t border-gray-100 space-y-2">
-                          <div className="text-xs">
-                            <span className="text-gray-500 font-semibold">Active Mitigation: </span>
-                            <span className="text-blue-700 font-mono">{news.mitigation_rule}</span>
-                          </div>
-                          <div className="text-xs text-gray-600 bg-gray-50 p-2.5 rounded border border-gray-200">
-                            <span className="font-semibold text-gray-800">Defense Protocol: </span>
-                            {news.actionable_recommendation}
-                          </div>
-                          <div className="pt-2 flex items-center justify-between">
-                            <button
-                              onClick={() => handleDeployMitigation(news.mitigation_rule)}
-                              className="bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 px-2.5 py-1 rounded text-xs font-medium transition flex items-center gap-1.5"
-                            >
-                              <ShieldCheck className="w-3.5 h-3.5" />
-                              Deploy to Decision Engine
-                            </button>
-                            <button
-                              onClick={() =>
-                                handleAskCopilot(
-                                  `Analyze threat vector "${news.headline}" (${news.category}). Explain how PayShield mitigates this and protects merchant funds under PayPal seller protection.`
-                                )
-                              }
-                              className="text-gray-600 hover:text-gray-900 text-xs flex items-center gap-1 transition"
-                            >
-                              <Bot className="w-3.5 h-3.5" />
-                              Analyze with Copilot
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                </div>
-              </div>
-            )}
-
-            {/* VIEW 3: INTERACTIVE L402 AGENTIC PROTOCOL CONSOLE */}
-            {threatViewMode === 'terminal' && (
-              <div className="space-y-4">
-                {/* L402 Banner Overview */}
-                <div className="bg-white border border-purple-200 rounded-lg p-5 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[11px] bg-purple-50 text-purple-700 border border-purple-200 font-mono px-2 py-0.5 rounded-full font-bold">
-                        L402 Protocol • RFC 402 Specification
-                      </span>
-                      <span className="text-xs text-gray-500 font-mono">PayPal Orders v2 Micro-Settlement</span>
-                    </div>
-                    <h3 className="text-sm font-bold text-gray-900">Autonomous Machine-to-Machine Threat Intelligence Licensing</h3>
-                    <p className="text-xs text-gray-600 max-w-3xl leading-relaxed">
-                      AI crawlers, risk bots, and merchant subagents cannot click buttons or fill out forms. The L402 protocol enables programmatic access: servers return <code className="text-purple-700 bg-purple-50 px-1 py-0.5 rounded font-mono">HTTP 402 Payment Required</code>, bots execute instant PayPal micro-captures ($0.05 USD), receive cryptographically signed HMAC bearer tokens, and ingest zero-day threat feeds without human friction.
-                    </p>
-                  </div>
-
-                  <div className="flex items-center gap-2 shrink-0">
-                    <button
-                      onClick={() => {
-                        navigator.clipboard.writeText('curl -i https://payshield-ai.onrender.com/api/v1/l402/threat-feed -H "User-Agent: PayShield-AgentBot/1.0"');
-                        setL402Copied(true);
-                        setTimeout(() => setL402Copied(false), 3000);
-                      }}
-                      className="bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1.5 shadow-sm"
-                    >
-                      {l402Copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                      {l402Copied ? "cURL Copied" : "Copy cURL"}
-                    </button>
-                    <button
-                      onClick={handleL402Reset}
-                      className="text-gray-600 hover:text-gray-900 text-xs px-2.5 py-1.5 rounded bg-gray-100 border border-gray-200 transition"
-                    >
-                      Reset Console
-                    </button>
-                  </div>
-                </div>
-
-                {/* Step Action Pipeline Bar */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <button
-                    onClick={handleL402FetchChallenge}
-                    disabled={l402TerminalLoading}
-                    className={`p-4 rounded-lg border text-left transition flex items-start gap-3 shadow-sm ${
-                      l402Step === 1
-                        ? 'bg-purple-50/70 border-purple-400'
-                        : 'bg-white border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <div className="w-6 h-6 rounded-full bg-purple-100 text-purple-700 border border-purple-200 flex items-center justify-center font-mono text-xs font-bold shrink-0">
-                      1
-                    </div>
-                    <div>
-                      <div className="text-xs font-bold text-gray-900 flex items-center gap-1.5">
-                        Test Bot Query
-                        <span className="text-[10px] font-mono text-purple-700 bg-purple-100 px-1.5 py-0.2 rounded border border-purple-200">
-                          HTTP 402
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-gray-500 mt-0.5">
-                        Query feed without bearer token. Server returns HTTP 402 challenge with PayPal offers.
-                      </p>
-                    </div>
-                  </button>
-
-                  <button
-                    onClick={handleL402SettlePayment}
-                    disabled={l402TerminalLoading || l402Step < 1}
-                    className={`p-4 rounded-lg border text-left transition flex items-start gap-3 shadow-sm ${
-                      l402Step === 2
-                        ? 'bg-blue-50/70 border-blue-400'
-                        : l402Step >= 1
-                        ? 'bg-white border-gray-200 hover:border-gray-300'
-                        : 'bg-gray-50 border-gray-200 opacity-50 cursor-not-allowed'
-                    }`}
-                  >
-                    <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-700 border border-blue-200 flex items-center justify-center font-mono text-xs font-bold shrink-0">
-                      2
-                    </div>
-                    <div>
-                      <div className="text-xs font-bold text-gray-900 flex items-center gap-1.5">
-                        Settle PayPal Micropayment
-                        <span className="text-[10px] font-mono text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200">
-                          $0.05 USD
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-gray-500 mt-0.5">
-                        Agent executes PayPal Orders v2 CAPTURE and receives HMAC signed Bearer token.
-                      </p>
-                    </div>
-                  </button>
-
-                  <button
-                    onClick={handleL402UnlockFeed}
-                    disabled={l402TerminalLoading || l402Step < 2}
-                    className={`p-4 rounded-lg border text-left transition flex items-start gap-3 shadow-sm ${
-                      l402Step === 3
-                        ? 'bg-emerald-50/70 border-emerald-400'
-                        : l402Step >= 2
-                        ? 'bg-white border-gray-200 hover:border-gray-300'
-                        : 'bg-gray-50 border-gray-200 opacity-50 cursor-not-allowed'
-                    }`}
-                  >
-                    <div className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200 flex items-center justify-center font-mono text-xs font-bold shrink-0">
-                      3
-                    </div>
-                    <div>
-                      <div className="text-xs font-bold text-gray-900 flex items-center gap-1.5">
-                        Query with Bearer Token
-                        <span className="text-[10px] font-mono text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200">
-                          HTTP 200 UNLOCKED
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-gray-500 mt-0.5">
-                        Transmit token in Authorization header. Feed unlocks and streams premium telemetry.
-                      </p>
-                    </div>
-                  </button>
-                </div>
-
-                {/* Interactive Terminal Screen */}
-                <div className="bg-[#0f172a] border border-gray-800 rounded-lg overflow-hidden font-mono shadow-md">
-                  {/* Terminal Window Header */}
-                  <div className="bg-[#1e293b] px-4 py-2.5 border-b border-gray-700 flex items-center justify-between text-xs text-gray-400">
-                    <div className="flex items-center gap-2">
-                      <span className="w-3 h-3 rounded-full bg-rose-500 inline-block"></span>
-                      <span className="w-3 h-3 rounded-full bg-amber-500 inline-block"></span>
-                      <span className="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span>
-                      <span className="ml-2 font-semibold text-gray-200">
-                        agent-client@payshield: ~/l402-protocol-gateway
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-[11px] text-gray-400">FastAPI + PayPal v2 Orders</span>
-                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-                    </div>
-                  </div>
-
-                  {/* Terminal Viewport */}
-                  <div className="p-4 space-y-4 min-h-[360px] text-xs leading-relaxed overflow-x-auto text-gray-300">
-                    {/* Initial State / Prompt */}
-                    <div className="text-gray-400">
-                      <span className="text-emerald-400">agent@crawler-host:~$</span> # Interactive L402 Machine-to-Machine PayPal Sandbox
-                      <br />
-                      <span className="text-gray-500">
-                        Click Step 1 above to simulate an autonomous crawler attempting to read the threat feed.
-                      </span>
-                    </div>
-
-                    {/* Step 1 Output */}
-                    {l402Step >= 1 && (
-                      <div className="space-y-2 border-l-2 border-purple-500/60 pl-3">
-                        <div className="text-purple-300 font-bold">
-                          <span className="text-emerald-400">agent@crawler-host:~$</span> curl -i -X GET https://payshield-ai.onrender.com/api/v1/l402/threat-feed \
-                          <br />
-                          &nbsp;&nbsp;-H "User-Agent: AutonomousRiskCrawler/1.0"
-                        </div>
-                        <div className="text-amber-400">
-                          HTTP/1.1 402 Payment Required
-                          <br />
-                          WWW-Authenticate: L402 token_url='https://payshield-ai.onrender.com/api/v1/l402/payment-request'
-                          <br />
-                          Content-Type: application/json
-                        </div>
-                        <pre className="text-gray-300 bg-black/60 p-3 rounded-lg border border-purple-900/30 overflow-x-auto">
-                          {JSON.stringify(l402Challenge, null, 2)}
-                        </pre>
-                      </div>
-                    )}
-
-                    {/* Step 2 Output */}
-                    {l402Step >= 2 && (
-                      <div className="space-y-2 border-l-2 border-blue-500/60 pl-3">
-                        <div className="text-blue-300 font-bold">
-                          <span className="text-emerald-400">agent@crawler-host:~$</span> curl -X POST https://payshield-ai.onrender.com/api/v1/l402/payment-request \
-                          <br />
-                          &nbsp;&nbsp;-H "Content-Type: application/json" \
-                          <br />
-                          &nbsp;&nbsp;-d '{"{"}"payment_context_token": "{l402Challenge?.payment_context_token || '62f1f983-589c...'}", "offer_id": "single_bulletin"{"}"}'
-                        </div>
-                        <div className="text-emerald-400 font-semibold">
-                          [PayPal Orders v2] Transaction CAPTURE Completed • Status: 200 OK
-                        </div>
-                        <pre className="text-gray-300 bg-black/60 p-3 rounded-lg border border-blue-900/30 overflow-x-auto">
-                          {JSON.stringify(l402PaymentResult, null, 2)}
-                        </pre>
-                      </div>
-                    )}
-
-                    {/* Step 3 Output */}
-                    {l402Step >= 3 && (
-                      <div className="space-y-2 border-l-2 border-emerald-500/60 pl-3">
-                        <div className="text-emerald-300 font-bold">
-                          <span className="text-emerald-400">agent@crawler-host:~$</span> curl -i -X GET https://payshield-ai.onrender.com/api/v1/l402/threat-feed \
-                          <br />
-                          &nbsp;&nbsp;-H "Authorization: Bearer {l402PaymentResult?.bearer_token || 'l402_9f81a7b4...'}"
-                        </div>
-                        <div className="text-emerald-400 font-semibold">
-                          HTTP/1.1 200 OK • ACCESS UNLOCKED VIA PAYPAL L402 CRYPTOGRAPHIC TOKEN
-                        </div>
-                        <pre className="text-gray-300 bg-black/60 p-3 rounded-lg border border-emerald-900/30 overflow-x-auto max-h-64">
-                          {JSON.stringify(l402UnlockedData, null, 2)}
-                        </pre>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Merchant Threat Dispatch & Newsletter Subscription Box */}
-            <div className="bg-white border border-gray-200 p-6 rounded-lg flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
-              <div className="flex items-start gap-4">
-                <div className="p-3 rounded-lg bg-blue-50 text-blue-600 border border-blue-100 shrink-0">
-                  <Mail className="w-6 h-6" />
-                </div>
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-sm font-bold text-gray-900">Merchant Threat Intelligence Dispatch</h3>
-                    <span className="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.2 rounded-full font-mono">
-                      Verified RSS / Email
-                    </span>
-                  </div>
-                  <p className="text-xs text-gray-600 max-w-xl leading-relaxed">
-                    Receive verified PayPal zero-day bulletins, carding attack countermeasures, and dispute regulation updates directly to your merchant security team.
-                  </p>
-
-                  {/* Frequency Selector Pills */}
-                  <div className="flex items-center gap-2 pt-2">
-                    <span className="text-[11px] text-gray-500 font-medium mr-1">Frequency:</span>
-                    {[
-                      { id: 'REALTIME', label: '⚡ Real-Time Pager' },
-                      { id: 'DAILY', label: '📅 Daily Briefing' },
-                      { id: 'WEEKLY', label: '📊 Weekly Digest' }
-                    ].map((f) => (
-                      <button
-                        key={f.id}
-                        type="button"
-                        onClick={() => setNewsletterFrequency(f.id)}
-                        className={`text-[10px] font-medium px-2 py-0.5 rounded-full border transition ${
-                          newsletterFrequency === f.id
-                            ? 'bg-blue-50 text-blue-700 border-blue-300 font-semibold'
-                            : 'bg-gray-100 text-gray-600 border-gray-200 hover:text-gray-900'
-                        }`}
-                      >
-                        {f.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Subscription Form */}
-              <form onSubmit={handleNewsletterSubmit} className="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto shrink-0">
-                <input
-                  type="email"
-                  value={newsletterEmail}
-                  onChange={(e) => setNewsletterEmail(e.target.value)}
-                  placeholder="security@merchant-store.com"
-                  required
-                  className="bg-gray-50 border border-gray-300 text-xs text-gray-900 px-3.5 py-2.5 rounded-lg focus:outline-none focus:border-blue-500 focus:bg-white w-full sm:w-64 font-sans"
-                />
-                <button
-                  type="submit"
-                  className="bg-gray-900 hover:bg-black text-white text-xs font-semibold px-4 py-2.5 rounded-lg transition shadow-sm flex items-center justify-center gap-1.5 w-full sm:w-auto shrink-0"
-                >
-                  <MailCheck className="w-3.5 h-3.5" />
-                  Subscribe
-                </button>
-              </form>
-            </div>
-
-            {/* Newsletter Subscription Confirmation Notification */}
-            {newsletterSuccess && newsletterSubResult && (
-              <div className="text-xs text-emerald-900 bg-emerald-50 border border-emerald-300 p-4 rounded-lg flex items-center justify-between shadow-sm">
-                <div className="flex items-center gap-3">
-                  <div className="p-1.5 rounded-lg bg-emerald-100 text-emerald-700">
-                    <CheckCircle2 className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <div className="font-bold text-gray-900">Subscription Active • ID: {newsletterSubResult.subscription_id}</div>
-                    <div className="text-gray-700 mt-0.5">
-                      {newsletterSubResult.message}
-                    </div>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setNewsletterSuccess(false)}
-                  className="text-emerald-700 hover:underline text-xs font-medium"
-                >
-                  Dismiss
-                </button>
-              </div>
-            )}
-          </div>
+        {/* 2. DEDICATED SEPARATE PAGE FOR EACH PROBLEM */}
+        {activePortal === 'problem' && (
+          <ProblemPage
+            category={currentCategoryObj}
+            allCategories={THREAT_CATEGORIES}
+            threatNews={threatNews}
+            onSelectProblem={handleSelectProblem}
+            onBackToDesk={() => {
+              setActivePortal('hub');
+              setActiveProblemId(null);
+            }}
+            onDeployMitigation={handleDeployMitigation}
+            onAskCopilot={handleAskCopilot}
+          />
         )}
 
-        {/* PORTAL 4: AI RISK COPILOT */}
+        {/* 3. DEDICATED SEPARATE NEWSLETTER PAGE (3RD PURPOSE) */}
+        {activePortal === 'newsletter' && (
+          <NewsletterPage
+            newsletterEmail={newsletterEmail}
+            setNewsletterEmail={setNewsletterEmail}
+            newsletterFrequency={newsletterFrequency}
+            setNewsletterFrequency={setNewsletterFrequency}
+            onSubscribe={handleNewsletterSubmit}
+            subscriptionSuccess={newsletterSuccess}
+            subscriptionResult={newsletterSubResult}
+            onDismissSuccess={() => setNewsletterSuccess(false)}
+          />
+        )}
+
+        {/* 4. RISK RADAR */}
+        {activePortal === 'radar' && (
+          <RiskRadar
+            transactions={transactions}
+            selectedTx={selectedTx}
+            setSelectedTx={setSelectedTx}
+            onAskCopilot={handleAskCopilot}
+          />
+        )}
+
+        {/* 5. $15 FEE DISPUTE STUDIO */}
+        {activePortal === 'disputes' && (
+          <DisputeStudio
+            disputes={disputes}
+            onDisputeSubmit={handleDisputeSubmit}
+            onAskCopilot={handleAskCopilot}
+          />
+        )}
+
+        {/* 6. L402 BOT TOLLGATE */}
+        {activePortal === 'terminal' && (
+          <L402Console
+            l402Step={l402Step}
+            l402Challenge={l402Challenge}
+            l402PaymentResult={l402PaymentResult}
+            l402UnlockedData={l402UnlockedData}
+            l402TerminalLoading={l402TerminalLoading}
+            l402Copied={l402Copied}
+            setL402Copied={setL402Copied}
+            onFetchChallenge={handleL402FetchChallenge}
+            onSettlePayment={handleL402SettlePayment}
+            onUnlockFeed={handleL402UnlockFeed}
+            onReset={handleL402Reset}
+          />
+        )}
+
+        {/* 7. AI RISK COPILOT */}
         {activePortal === 'copilot' && (
-          <div className="max-w-4xl mx-auto space-y-6">
-            <div className="bg-white border border-gray-200 p-5 rounded-lg shadow-sm">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-lg bg-blue-50 text-blue-600 border border-blue-100">
-                  <Bot className="w-6 h-6" />
-                </div>
-                <div>
-                  <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
-                    PayShield Grounded Copilot
-                    <span className="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full font-mono font-medium">
-                      Mathematical Precision
-                    </span>
-                  </h2>
-                  <p className="text-xs text-gray-600 mt-0.5">
-                    Ask questions about risk scores, SHAP feature attributions, and dispute ROI against PayPal's $15 fee equation.
-                  </p>
-                </div>
-              </div>
-
-              {/* Sample Quick Questions */}
-              <div className="mt-4 pt-4 border-t border-gray-200 flex flex-wrap gap-2">
-                <span className="text-[11px] text-gray-500 font-medium self-center mr-1">Quick Inquiries:</span>
-                <button
-                  onClick={() => handleCopilotSubmit("Why was transaction ORD-9430 assigned a critical fraud block?")}
-                  className="text-xs bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 px-3 py-1.5 rounded-lg transition"
-                >
-                  Why was ORD-9430 blocked?
-                </button>
-                <button
-                  onClick={() => handleCopilotSubmit("Should I contest small dispute PP-D-441029 or write it off?")}
-                  className="text-xs bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 px-3 py-1.5 rounded-lg transition"
-                >
-                  Dispute $15 Fee ROI calculation
-                </button>
-                <button
-                  onClick={() => handleCopilotSubmit("What active carding botnet threats are detected on PayPal checkout?")}
-                  className="text-xs bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 px-3 py-1.5 rounded-lg transition"
-                >
-                  Active Botnet Threat Bulletins
-                </button>
-              </div>
-            </div>
-
-            {/* Chat History Messages */}
-            <div className="bg-white border border-gray-200 rounded-lg p-5 min-h-[400px] max-h-[500px] overflow-y-auto space-y-4 shadow-sm">
-              {copilotHistory.map((msg, idx) => (
-                <div key={idx} className={`flex gap-3 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  {msg.sender === 'copilot' && (
-                    <div className="w-8 h-8 rounded-lg bg-blue-50 border border-blue-200 flex items-center justify-center shrink-0 text-blue-600">
-                      <Bot className="w-4 h-4" />
-                    </div>
-                  )}
-                  <div className={`p-4 rounded-xl text-xs max-w-xl leading-relaxed ${
-                    msg.sender === 'user'
-                      ? 'bg-blue-600 text-white font-medium ml-12 shadow-sm'
-                      : 'bg-gray-50 border border-gray-200 text-gray-900'
-                  }`}>
-                    <p>{msg.text}</p>
-                    {msg.evidence && (
-                      <div className="mt-3 pt-2.5 border-t border-gray-200 space-y-1">
-                        <span className="text-[10px] text-gray-500 font-semibold uppercase tracking-wider">
-                          Grounded Mathematical Evidence:
-                        </span>
-                        {msg.evidence.map((ev, i) => (
-                          <div key={i} className="text-[11px] text-emerald-700 flex items-center gap-1.5 font-mono">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
-                            {ev}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-              {copilotLoading && (
-                <div className="flex gap-3 items-center text-xs text-gray-500 italic">
-                  <div className="w-8 h-8 rounded-lg bg-blue-50 border border-blue-200 flex items-center justify-center shrink-0 text-blue-600 animate-spin">
-                    <RefreshCw className="w-4 h-4" />
-                  </div>
-                  Analyzing transaction features and economic recovery bounds...
-                </div>
-              )}
-            </div>
-
-            {/* Input Bar */}
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={copilotQuery}
-                onChange={(e) => setCopilotQuery(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleCopilotSubmit()}
-                placeholder="Ask about risk features, SHAP additivity, or PayPal dispute viability..."
-                className="flex-1 bg-white border border-gray-300 text-xs text-gray-900 px-4 py-3 rounded-lg focus:outline-none focus:border-blue-500 shadow-sm"
-              />
-              <button
-                onClick={() => handleCopilotSubmit()}
-                disabled={copilotLoading}
-                className="bg-gray-900 hover:bg-black text-white px-5 py-3 rounded-lg text-xs font-medium transition flex items-center gap-2 shadow-sm"
-              >
-                <Send className="w-3.5 h-3.5" />
-                Ask Copilot
-              </button>
-            </div>
-          </div>
+          <Copilot
+            copilotQuery={copilotQuery}
+            setCopilotQuery={setCopilotQuery}
+            copilotHistory={copilotHistory}
+            copilotLoading={copilotLoading}
+            onCopilotSubmit={handleCopilotSubmit}
+          />
         )}
 
-        {/* PORTAL 5: COMPLIANCE AUDIT VAULT */}
+        {/* 8. COMPLIANCE AUDIT VAULT */}
         {activePortal === 'audit' && (
-          <div className="space-y-6 max-w-6xl mx-auto">
-            <div className="bg-white border border-gray-200 p-5 rounded-lg flex items-center justify-between shadow-sm">
-              <div>
-                <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
-                  <Database className="w-5 h-5 text-emerald-600" />
-                  Immutable Cryptographic Audit Vault
-                </h2>
-                <p className="text-xs text-gray-600 mt-1">
-                  Every decision is signed with SHA-256 for tamper-proof regulatory reporting and banking compliance.
-                </p>
-              </div>
-              <button
-                onClick={handleExportAuditJson}
-                className="bg-white hover:bg-gray-50 text-gray-700 px-3.5 py-1.5 rounded-lg border border-gray-300 text-xs font-medium flex items-center gap-2 transition shadow-sm"
-              >
-                <Download className="w-3.5 h-3.5" />
-                Export Ledger (JSON)
-              </button>
-            </div>
-
-            <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
-              <table className="w-full text-left border-collapse text-xs">
-                <thead>
-                  <tr className="border-b border-gray-200 text-gray-600 uppercase tracking-wider font-semibold bg-gray-50">
-                    <th className="py-3 px-4">Transaction Reference</th>
-                    <th className="py-3 px-4">Amount</th>
-                    <th className="py-3 px-4">Action</th>
-                    <th className="py-3 px-4">SHAP Additivity Delta</th>
-                    <th className="py-3 px-4">SHA-256 Cryptographic Signature</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100 font-mono">
-                  {transactions.map((tx) => (
-                    <tr key={tx.transaction_id} className="hover:bg-gray-50 transition">
-                      <td className="py-3.5 px-4 font-bold text-gray-900">
-                        {tx.transaction_id}
-                        <div className="text-[11px] text-gray-500 font-normal">{tx.buyer_email}</div>
-                      </td>
-                      <td className="py-3.5 px-4 font-semibold text-gray-900">
-                        ${tx.amount_usd.toFixed(2)}
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <span className="px-2 py-0.5 rounded border text-[11px] bg-gray-100 text-gray-800 border-gray-200">
-                          {tx.action}
-                        </span>
-                      </td>
-                      <td className="py-3.5 px-4 text-emerald-700">
-                        Δ = {tx.additivity_verification?.delta.toFixed(6) || "0.000018"} (PASS)
-                      </td>
-                      <td className="py-3.5 px-4 text-gray-400 text-[10px] truncate max-w-[220px]">
-                        e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <AuditVault
+            transactions={transactions}
+            onExportAuditJson={handleExportAuditJson}
+          />
         )}
 
-        {/* PORTAL 6: ATTACK SIMULATOR & WORKBENCH */}
+        {/* 9. ATTACK SIMULATOR */}
         {activePortal === 'simulator' && (
-          <div className="max-w-4xl mx-auto space-y-6">
-            <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-              <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                <Zap className="w-5 h-5 text-amber-500" />
-                Live PayPal Fraud &amp; Attack Simulator
-              </h2>
-              <p className="text-xs text-gray-600 mt-1">
-                Inject synthetic PayPal order payloads into the live `/api/v1/evaluate` backend pipeline to demonstrate
-                calibrated Platt scoring, SHAP tree explainability, and deterministic policy boundaries.
-              </p>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-                <div className="bg-gray-50 border border-gray-200 p-4 rounded-lg flex flex-col justify-between">
-                  <div>
-                    <h3 className="font-bold text-emerald-700 text-sm">Scenario A: Normal Buyer</h3>
-                    <p className="text-xs text-gray-600 mt-2">
-                      Order: $75.00 USD. Verified account, matching shipping and IP countries, 0 prior disputes, normal baseline amount.
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => { handleSimulate('LEGIT'); setActivePortal('radar'); }}
-                    disabled={isSimulating}
-                    className="mt-4 w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 rounded text-xs transition shadow-sm"
-                  >
-                    Simulate &amp; Inspect
-                  </button>
-                </div>
-
-                <div className="bg-gray-50 border border-gray-200 p-4 rounded-lg flex flex-col justify-between">
-                  <div>
-                    <h3 className="font-bold text-rose-700 text-sm">Scenario B: High-Velocity Carding Burst</h3>
-                    <p className="text-xs text-gray-600 mt-2">
-                      Order: $480.00 USD. 7 transactions in last 60 minutes, IP geolocation in Nigeria vs US shipping, unverified account.
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => { handleSimulate('CARDING'); setActivePortal('radar'); }}
-                    disabled={isSimulating}
-                    className="mt-4 w-full bg-rose-600 hover:bg-rose-700 text-white font-semibold py-2 rounded text-xs transition shadow-sm"
-                  >
-                    Simulate &amp; Block
-                  </button>
-                </div>
-
-                <div className="bg-gray-50 border border-gray-200 p-4 rounded-lg flex flex-col justify-between">
-                  <div>
-                    <h3 className="font-bold text-amber-700 text-sm">Scenario C: Cross-Border FX Manipulation</h3>
-                    <p className="text-xs text-gray-600 mt-2">
-                      Order: $1,250.00 USD. Severe FX spread deviation (13.6% above mid-market benchmark), brand new account, 1 prior dispute.
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => { handleSimulate('FX_MANIP'); setActivePortal('radar'); }}
-                    disabled={isSimulating}
-                    className="mt-4 w-full bg-amber-600 hover:bg-amber-700 text-white font-semibold py-2 rounded text-xs transition shadow-sm"
-                  >
-                    Simulate &amp; Step-Up
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
+          <Simulator
+            isSimulating={isSimulating}
+            onSimulate={handleSimulate}
+            onInspectRadar={() => setActivePortal('radar')}
+          />
         )}
       </main>
     </div>
