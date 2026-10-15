@@ -75,11 +75,11 @@ class TestL402AgenticGateway:
         assert all_res.status_code == 200
         assert len(all_res.json()) >= 4
 
-        cat_res = client.get("/api/v1/threats?category=CARD_TESTING")
+        cat_res = client.get("/api/v1/threats?category=MERCHANT_CHRONICLES")
         assert cat_res.status_code == 200
         items = cat_res.json()
         assert len(items) >= 1
-        assert all(i["category"] == "CARD_TESTING" for i in items)
+        assert all(i["category"] == "MERCHANT_CHRONICLES" for i in items)
 
     def test_newsletter_subscription(self):
         """Merchants can subscribe to real-time threat intelligence bulletins."""

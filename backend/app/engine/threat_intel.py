@@ -27,81 +27,87 @@ class ThreatArticle(BaseModel):
 # Pre-curated realistic threat telemetry bulletins for PayPal merchants
 GLOBAL_THREAT_BULLETINS: list[ThreatArticle] = [
     ThreatArticle(
-        id="INTEL-2026-089",
-        headline="Coordinated Micro-Authorization Card Testing Spike on PayPal Express Checkout",
+        id="DISPATCH-2026-101",
+        headline="The $14k Holiday Chargeback Wave: How an Indie Boutique Survived Coordinated Return Fraud",
         summary=(
-            "Distributed botnets utilizing Romanian and Nigerian egress IPs are attempting high-frequency "
-            "sub-$2.00 authorizations to validate stolen card sets against European PayPal merchant accounts."
+            "Independent boutique owners report sophisticated return-syndicates exploiting holiday return policies. "
+            "Real-time address validation and carrier delivery proofs prevented 92% of frivolous losses."
         ),
-        category="CARD_TESTING",
+        category="MERCHANT_CHRONICLES",
         severity="CRITICAL",
-        published_at="2026-10-13T18:45:00Z",
-        mitigation_rule="RULE_5_PROB_CRITICAL_HIGH_VALUE_BLOCK & Rolling 1h Velocity Gating",
-        impacted_channels=["Express Checkout", "Guest Payments", "Digital Goods"],
+        published_at="2026-10-15T18:30:00Z",
+        mitigation_rule="Enforce Delivery Scan Verification Prior to Issuing Merchant Refunds",
+        impacted_channels=["Shopify Checkout", "PayPal Express", "Custom Boutiques"],
         actionable_recommendation=(
-            "PayShield velocity window threshold automatically reduces tolerated 1-hour transaction "
-            "counts from 5 to 2 per IP subnet. High-velocity bursts are blocked pre-capture."
+            "Never contest low-ticket claims without carrier scans; automate dispute evidence submission for claims >$50."
         ),
     ),
     ThreatArticle(
-        id="INTEL-2026-072",
-        headline="Cross-Border FX Arbitrage Exploit Targeting GBP/USD Currency Conversion Rails",
+        id="DISPATCH-2026-088",
+        headline="Postal Reality Check: Why Carrier Tracking Scans Are Your Only Legal Shield Under Disputes v1",
         summary=(
-            "Fraud rings exploiting cross-border currency conversion rate disparities on synthetic buyer accounts. "
-            "Actual conversion spreads exceeding 4.5% above institutional mid-market benchmarks observed."
+            "PayPal's seller protection updates reaffirm that verified online carrier delivery confirmation "
+            "to the recipient's postal code provides conclusive merchant defense on Item-Not-Received claims."
         ),
-        category="CROSS_BORDER_FX",
+        category="SHIPPING_LOGISTICS",
         severity="ELEVATED",
-        published_at="2026-10-12T11:20:00Z",
-        mitigation_rule="RULE_3_PROB_ELEVATED_STEP_UP_AUTH & fx_spread Feature Weighting",
-        impacted_channels=["Multi-Currency Invoicing", "Cross-Border Goods"],
+        published_at="2026-10-15T18:00:00Z",
+        mitigation_rule="PayShield Dispute Engine — Autonomous Dossier Generation",
+        impacted_channels=["USPS Priority", "FedEx Home Delivery", "UPS Ground"],
         actionable_recommendation=(
-            "PayShield FX spread detector triggers 3-D Secure biometric step-up verification whenever "
-            "transaction rate diverges >3% from mid-market benchmark."
+            "Automatically sync postal tracking scans to PayPal Disputes v1 API to maintain a >85% win probability."
         ),
     ),
     ThreatArticle(
-        id="INTEL-2026-061",
-        headline="PayPal Seller Protection Evidence Clarification for Item-Not-Received Claims",
+        id="DISPATCH-2026-074",
+        headline="The $15 Fee Trap: Why Fighting a $12 Claim Mathematically Destroys Merchant Margins",
         summary=(
-            "PayPal policy update specifies that online carrier tracking confirmation showing physical delivery "
-            "at the buyer's recipient postal code constitutes conclusive seller defense under Disputes v1."
+            "PayPal assesses a non-refundable $15 fee on contested claims regardless of outcome. Independent data "
+            "shows store owners lose more capital fighting cheap claims than immediately conceding."
         ),
-        category="DISPUTE_RULES",
+        category="PAYMENTS_RAILS",
+        severity="ELEVATED",
+        published_at="2026-10-15T17:30:00Z",
+        mitigation_rule="PayShield Net EV Model: Auto-Concede Claims with Negative Expected Value",
+        impacted_channels=["Multi-Currency Rails", "Digital Downloads", "Low-Dollar Goods"],
+        actionable_recommendation=(
+            "Only contest chargebacks when (P_win × Amount) > $15.00 to guarantee net positive recovery."
+        ),
+    ),
+    ThreatArticle(
+        id="DISPATCH-2026-052",
+        headline="Taming Automated Scrapers: Why CAPTCHAs Fail and How L402 Turns Crawlers into Paying Customers",
+        summary=(
+            "Autonomous AI bots cannot solve visual puzzle captchas or enter credit card numbers. Implementing HTTP 402 "
+            "with PayPal Orders v2 charges crawlers 5 cents per API call without human friction."
+        ),
+        category="BOT_WAVE",
         severity="LOW",
-        published_at="2026-10-10T09:00:00Z",
-        mitigation_rule="PayShield Dispute Engine — PROCEED_DIRECT_DISPUTE Dossier Generation",
-        impacted_channels=["Disputes API v1", "Physical Shipments"],
+        published_at="2026-10-15T16:00:00Z",
+        mitigation_rule="L402 Protocol Gateway with PayPal Orders v2 Micro-Settlement",
+        impacted_channels=["Public Catalog APIs", "Threat Telemetry", "Merchant Inventory"],
         actionable_recommendation=(
-            "PayShield dispute engine automatically pairs USPS/FedEx carrier delivery scans with PayPal order captures, "
-            "yielding >75% win probability and guaranteed positive expected recovery."
-        ),
-    ),
-    ThreatArticle(
-        id="INTEL-2026-044",
-        headline="Synthetic Identity Inundation on Fresh PayPal Buyer Accounts Under 14 Days",
-        summary=(
-            "Rise in newly minted PayPal accounts with unverified banking links attempting rapid bulk checkouts "
-            "prior to initial bank account verification cycles."
-        ),
-        category="ACCOUNT_TAKEOVER",
-        severity="ELEVATED",
-        published_at="2026-10-08T14:15:00Z",
-        mitigation_rule="account_risk_score Logarithmic Age Decay Feature",
-        impacted_channels=["Marketplace Payments", "New Customers"],
-        actionable_recommendation=(
-            "PayShield account_risk_score assigns maximum penalty to unverified buyer accounts <30 days, "
-            "requiring secondary email/SMS verification before capture."
+            "Replace hostile CAPTCHA blockers with L402 PayPal micropayment paywalls to monetize autonomous bot traffic."
         ),
     ),
 ]
+
+CATEGORY_ALIASES: dict[str, str] = {
+    "CARD_TESTING": "MERCHANT_CHRONICLES",
+    "CROSS_BORDER_FX": "PAYMENTS_RAILS",
+    "DISPUTE_RULES": "SHIPPING_LOGISTICS",
+    "ACCOUNT_TAKEOVER": "BOT_WAVE",
+}
 
 
 def get_latest_threat_bulletins(category: str | None = None) -> list[ThreatArticle]:
     """Retrieve all active threat intelligence bulletins, optionally filtered by category."""
     if not category or category.upper() == "ALL":
         return GLOBAL_THREAT_BULLETINS
-    return [b for b in GLOBAL_THREAT_BULLETINS if b.category.upper() == category.upper()]
+    
+    cat_upper = category.upper()
+    resolved_category = CATEGORY_ALIASES.get(cat_upper, cat_upper)
+    return [b for b in GLOBAL_THREAT_BULLETINS if b.category.upper() == resolved_category or b.category.upper() == cat_upper]
 
 
 class NewsletterSubscriptionRequest(BaseModel):
