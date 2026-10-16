@@ -2,51 +2,21 @@ import React from 'react';
 import {
   ShieldCheck,
   Activity,
-  Bot,
   CheckCircle2
 } from 'lucide-react';
 
 export default function RiskRadar({
   transactions,
   selectedTx,
-  setSelectedTx,
-  onAskCopilot
+  setSelectedTx
 }) {
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
-      {/* IEEE-CIS Benchmark Alignment Banner */}
-      <div className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-lg bg-blue-50 text-blue-600 border border-blue-100 shrink-0">
-            <ShieldCheck className="w-5 h-5 text-blue-600" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wider">
-                IEEE-CIS / Vesta Benchmark Standard (E-Commerce Fraud)
-              </h3>
-              <span className="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded font-mono font-medium">
-                Trained &amp; Platt Calibrated
-              </span>
-            </div>
-            <p className="text-xs text-gray-600 mt-0.5">
-              Production LightGBM pipeline trained on 25,000 tabular transactions (5,000 holdout test set) with mathematically verified SHAP TreeExplainer attributions.
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-3 text-xs font-mono shrink-0">
-          <div className="bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-lg text-center">
-            <div className="text-[10px] text-gray-500 font-sans">ROC-AUC</div>
-            <div className="font-bold text-emerald-600">1.0000</div>
-          </div>
-          <div className="bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-lg text-center">
-            <div className="text-[10px] text-gray-500 font-sans">Brier Score</div>
-            <div className="font-bold text-blue-600">0.0007</div>
-          </div>
-          <div className="bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-lg text-center">
-            <div className="text-[10px] text-gray-500 font-sans">SHAP Additivity</div>
-            <div className="font-bold text-purple-600">Δ &lt; 10⁻⁴</div>
-          </div>
+      {/* Evaluation Reference Banner */}
+      <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm flex items-center justify-between text-xs text-gray-600">
+        <div className="flex items-center gap-2">
+          <ShieldCheck className="w-4 h-4 text-emerald-600" />
+          <span>Metrics reported from held-out evaluation — see docs/DESIGN.md.</span>
         </div>
       </div>
 
@@ -134,13 +104,13 @@ export default function RiskRadar({
                 </div>
               </div>
 
-              {/* Cryptographic Additivity Seal */}
+              {/* SHAP Additivity Sanity Check */}
               <div className="mt-4 bg-emerald-50/70 border border-emerald-200 rounded-lg p-3.5 flex items-start gap-3">
                 <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
                 <div className="text-xs flex-1">
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-emerald-900 uppercase tracking-wider text-[11px]">
-                      Cryptographic SHAP Additivity Seal Verified
+                      SHAP Additivity Sanity Check Verified
                     </span>
                     <span className="font-mono text-emerald-700 font-semibold text-[11px]">
                       Δ = {selectedTx.additivity_verification.delta.toFixed(6)} &lt; 10⁻⁴
@@ -148,7 +118,7 @@ export default function RiskRadar({
                   </div>
                   <p className="text-gray-700 mt-1">
                     Invariant: Base bias ({selectedTx.additivity_verification.base_bias}) + Σ SHAP (
-                    {selectedTx.additivity_verification.shap_sum}) = Prediction Margin. Grounded tree nodes; zero LLM hallucinations.
+                    {selectedTx.additivity_verification.shap_sum}) = Prediction Margin. Grounded tree nodes; deterministic policy engine.
                   </p>
                 </div>
               </div>
@@ -228,19 +198,12 @@ export default function RiskRadar({
                 </div>
               </div>
 
-              {/* Cross-Link Action to Copilot */}
+              {/* Sanity Check & Verification Footer */}
               <div className="mt-4 pt-3 border-t border-gray-200 flex items-center justify-between">
                 <div className="flex items-center gap-1.5 text-[11px] text-gray-500">
                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>Certified Platt Calibrated Probability &amp; SHAP Additivity Seal</span>
+                  <span>Platt-calibrated probability with SHAP additivity verification</span>
                 </div>
-                <button
-                  onClick={() => onAskCopilot(`Explain transaction ${selectedTx.transaction_id} ($${selectedTx.amount_usd} USD, Action: ${selectedTx.action}, Risk Score: ${selectedTx.risk_score}%). Why was this decision chosen and what are the primary feature contributors?`)}
-                  className="bg-gray-900 hover:bg-black text-white px-3.5 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1.5 shadow-sm"
-                >
-                  <Bot className="w-3.5 h-3.5" />
-                  Consult Copilot
-                </button>
               </div>
             </>
           ) : (

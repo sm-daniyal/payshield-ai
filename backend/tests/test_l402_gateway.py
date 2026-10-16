@@ -81,18 +81,3 @@ class TestL402AgenticGateway:
         assert len(items) >= 1
         assert all(i["category"] == "MERCHANT_CHRONICLES" for i in items)
 
-    def test_newsletter_subscription(self):
-        """Merchants can subscribe to real-time threat intelligence bulletins."""
-        sub_payload = {
-            "email": "security@merchant.example.com",
-            "frequency": "REALTIME",
-            "categories": ["CARD_TESTING", "CROSS_BORDER_FX"],
-        }
-        res = client.post("/api/v1/threats/newsletter/subscribe", json=sub_payload)
-        assert res.status_code == 201
-        data = res.json()
-        assert data["email"] == "security@merchant.example.com"
-        assert data["status"] == "ACTIVE"
-        assert data["subscription_id"].startswith("SUB-")
-        assert "Successfully subscribed" in data["message"]
-

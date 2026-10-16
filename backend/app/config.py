@@ -22,6 +22,7 @@ class Settings(BaseSettings):
     # Application
     app_env: str = "development"
     log_level: str = "INFO"
+    allowed_origins: list[str] = ["http://localhost:5173"]
 
     # ML Decision Engine — cost-optimal threshold from threshold sweep
     cost_optimal_threshold: float = 0.40

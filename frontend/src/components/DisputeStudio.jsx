@@ -1,15 +1,13 @@
 import React from 'react';
 import {
   DollarSign,
-  Bot,
   Send,
   CheckCircle2
 } from 'lucide-react';
 
 export default function DisputeStudio({
   disputes,
-  onDisputeSubmit,
-  onAskCopilot
+  onDisputeSubmit
 }) {
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
@@ -95,18 +93,6 @@ export default function DisputeStudio({
                     </td>
                     <td className="py-3.5 px-4 text-right font-sans">
                       <div className="flex items-center justify-end gap-2">
-                        <button
-                          onClick={() =>
-                            onAskCopilot(
-                              `Evaluate the recovery economics for PayPal dispute ${d.dispute_id} (Claim Amount: $${d.amount_usd.toFixed(2)}, Reason: "${d.reason}", P_win: ${(d.win_probability * 100).toFixed(0)}%). Why did PayShield prescribe ${d.action} against the $15.00 non-refundable dispute fee?`
-                            )
-                          }
-                          className="bg-white hover:bg-gray-100 text-gray-700 border border-gray-300 p-1.5 rounded transition flex items-center gap-1 text-[11px]"
-                          title="Ask Copilot for mathematical breakdown"
-                        >
-                          <Bot className="w-3.5 h-3.5 text-blue-600" />
-                          <span className="hidden sm:inline">Copilot</span>
-                        </button>
                         {d.action === 'PROCEED_DIRECT_DISPUTE' && d.status !== 'SUBMITTED_TO_PAYPAL' ? (
                           <button
                             onClick={() => onDisputeSubmit(d)}

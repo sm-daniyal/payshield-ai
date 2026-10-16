@@ -17,6 +17,8 @@ export default function L402Console({
   onUnlockFeed,
   onReset
 }) {
+  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+
   return (
     <div className="space-y-4 max-w-5xl mx-auto">
       {/* L402 Banner Overview */}
@@ -30,14 +32,14 @@ export default function L402Console({
           </div>
           <h3 className="text-sm font-bold text-gray-900">Autonomous Machine-to-Machine Threat Intelligence Licensing</h3>
           <p className="text-xs text-gray-600 max-w-3xl leading-relaxed">
-            AI crawlers, risk bots, and merchant subagents cannot click buttons or fill out forms. The L402 protocol enables programmatic access: servers return <code className="text-purple-700 bg-purple-50 px-1 py-0.5 rounded font-mono">HTTP 402 Payment Required</code>, bots execute instant PayPal micro-captures ($0.05 USD), receive cryptographically signed HMAC bearer tokens, and ingest zero-day threat feeds without human friction.
+            AI crawlers, risk bots, and merchant subagents cannot click buttons or fill out forms. The L402 protocol enables programmatic access: servers return <code className="text-purple-700 bg-purple-50 px-1 py-0.5 rounded font-mono">HTTP 402 Payment Required</code>, bots execute instant PayPal micro-captures ($0.05 USD), receive HMAC-signed bearer tokens, and ingest zero-day threat feeds without human friction.
           </p>
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
           <button
             onClick={() => {
-              navigator.clipboard.writeText('curl -i https://payshield-ai.onrender.com/api/v1/l402/threat-feed -H "User-Agent: PayShield-AgentBot/1.0"');
+              navigator.clipboard.writeText(`curl -i ${API_BASE}/api/v1/l402/threat-feed -H "User-Agent: PayShield-AgentBot/1.0"`);
               setL402Copied(true);
               setTimeout(() => setL402Copied(false), 3000);
             }}
@@ -170,14 +172,14 @@ export default function L402Console({
           {l402Step >= 1 && (
             <div className="space-y-2 border-l-2 border-purple-500/60 pl-3">
               <div className="text-purple-300 font-bold">
-                <span className="text-emerald-400">agent@crawler-host:~$</span> curl -i -X GET https://payshield-ai.onrender.com/api/v1/l402/threat-feed \
+                <span className="text-emerald-400">agent@crawler-host:~$</span> curl -i -X GET {API_BASE}/api/v1/l402/threat-feed \
                 <br />
                 &nbsp;&nbsp;-H "User-Agent: AutonomousRiskCrawler/1.0"
               </div>
               <div className="text-amber-400">
                 HTTP/1.1 402 Payment Required
                 <br />
-                WWW-Authenticate: L402 token_url='https://payshield-ai.onrender.com/api/v1/l402/payment-request'
+                WWW-Authenticate: L402 token_url='{API_BASE}/api/v1/l402/payment-request'
                 <br />
                 Content-Type: application/json
               </div>
@@ -191,7 +193,7 @@ export default function L402Console({
           {l402Step >= 2 && (
             <div className="space-y-2 border-l-2 border-blue-500/60 pl-3">
               <div className="text-blue-300 font-bold">
-                <span className="text-emerald-400">agent@crawler-host:~$</span> curl -X POST https://payshield-ai.onrender.com/api/v1/l402/payment-request \
+                <span className="text-emerald-400">agent@crawler-host:~$</span> curl -X POST {API_BASE}/api/v1/l402/payment-request \
                 <br />
                 &nbsp;&nbsp;-H "Content-Type: application/json" \
                 <br />
@@ -210,12 +212,12 @@ export default function L402Console({
           {l402Step >= 3 && (
             <div className="space-y-2 border-l-2 border-emerald-500/60 pl-3">
               <div className="text-emerald-300 font-bold">
-                <span className="text-emerald-400">agent@crawler-host:~$</span> curl -i -X GET https://payshield-ai.onrender.com/api/v1/l402/threat-feed \
+                <span className="text-emerald-400">agent@crawler-host:~$</span> curl -i -X GET {API_BASE}/api/v1/l402/threat-feed \
                 <br />
                 &nbsp;&nbsp;-H "Authorization: Bearer {l402PaymentResult?.bearer_token || 'l402_9f81a7b4...'}"
               </div>
               <div className="text-emerald-400 font-semibold">
-                HTTP/1.1 200 OK • ACCESS UNLOCKED VIA PAYPAL L402 CRYPTOGRAPHIC TOKEN
+                HTTP/1.1 200 OK • ACCESS UNLOCKED VIA PAYPAL L402 HMAC BEARER TOKEN
               </div>
               <pre className="text-gray-300 bg-black/60 p-3 rounded-lg border border-emerald-900/30 overflow-x-auto max-h-64">
                 {JSON.stringify(l402UnlockedData, null, 2)}

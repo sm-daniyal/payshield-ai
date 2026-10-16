@@ -291,57 +291,12 @@ GLOBAL_THREAT_BULLETINS: list[ThreatArticle] = [
     ),
 ]
 
-CATEGORY_ALIASES: dict[str, str] = {
-    "CARD_TESTING": "MERCHANT_CHRONICLES",
-    "CROSS_BORDER_FX": "PAYMENTS_RAILS",
-    "DISPUTE_RULES": "SHIPPING_LOGISTICS",
-    "ACCOUNT_TAKEOVER": "BOT_WAVE",
-}
-
-
 def get_latest_threat_bulletins(category: str | None = None) -> list[ThreatArticle]:
     """Retrieve all active threat intelligence bulletins, optionally filtered by category."""
     if not category or category.upper() == "ALL":
         return GLOBAL_THREAT_BULLETINS
     
     cat_upper = category.upper()
-    resolved_category = CATEGORY_ALIASES.get(cat_upper, cat_upper)
-    return [b for b in GLOBAL_THREAT_BULLETINS if b.category.upper() == resolved_category or b.category.upper() == cat_upper]
+    return [b for b in GLOBAL_THREAT_BULLETINS if b.category.upper() == cat_upper]
 
-
-class NewsletterSubscriptionRequest(BaseModel):
-    email: str
-    frequency: str = Field(default="DAILY", description="REALTIME | DAILY | WEEKLY")
-    categories: list[str] = Field(default_factory=lambda: ["CARD_TESTING", "CROSS_BORDER_FX", "DISPUTE_RULES", "ACCOUNT_TAKEOVER"])
-
-
-class NewsletterSubscriptionResponse(BaseModel):
-    subscription_id: str
-    email: str
-    frequency: str
-    categories: list[str]
-    status: str
-    message: str
-    confirmed_at: str
-
-
-# In-memory store for newsletter subscriptions
-NEWSLETTER_SUBSCRIBERS: dict[str, dict] = {}
-
-
-def register_newsletter_subscription(req: NewsletterSubscriptionRequest) -> NewsletterSubscriptionResponse:
-    import uuid
-    sub_id = f"SUB-{uuid.uuid4().hex[:8].upper()}"
-    now_iso = datetime.now(timezone.utc).isoformat()
-    record = {
-        "subscription_id": sub_id,
-        "email": req.email,
-        "frequency": req.frequency,
-        "categories": req.categories,
-        "status": "ACTIVE",
-        "message": f"Successfully subscribed {req.email} to PayShield Merchant Threat Dispatch ({req.frequency}).",
-        "confirmed_at": now_iso
-    }
-    NEWSLETTER_SUBSCRIBERS[req.email.lower()] = record
-    return NewsletterSubscriptionResponse(**record)
 

@@ -2,7 +2,7 @@
 PayShield AI — Grounded SHAP Explainer & Additivity Verification
 
 Implements tree-based feature attribution using shap.TreeExplainer.
-Enforces the Zero-Hallucination Additivity Invariant:
+Enforces the additivity sanity check invariant:
   base_bias + sum(shap_values) == raw_margin (delta < 1e-4)
 
 Every attribution returned to the operator dashboard is mathematically proven
@@ -44,7 +44,7 @@ class GroundedShapExplainer:
         calibrated_prob: float,
     ) -> tuple[list[ShapContribution], AdditivityVerification]:
         """
-        Compute SHAP contributions and perform cryptographic additivity check.
+        Compute SHAP contributions and perform additivity sanity check.
 
         Returns:
             contributions: List of ShapContribution sorted by absolute magnitude.

@@ -7,11 +7,13 @@ The /evaluate endpoint (Phase 2) will be wired in here once the ML model is read
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.config import settings
+
 app = FastAPI(
     title="PayShield AI",
     description=(
-        "Real-time, zero-hallucination transaction-risk scoring and autonomous "
-        "dispute recovery engine for PayPal merchants."
+        "Pre-transaction trust layer for agentic commerce on PayPal: "
+        "agent risk scoring, L402 monetization, and dispute EV recovery."
     ),
     version="0.1.0",
     docs_url="/api/docs",
@@ -20,7 +22,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # React dev server
+    allow_origins=settings.allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -32,14 +34,12 @@ from app.api.webhooks import router as webhooks_router
 from app.api.disputes import router as disputes_router
 from app.api.threats import router as threats_router
 from app.api.l402 import router as l402_router
-from app.api.copilot import router as copilot_router
 
 app.include_router(evaluate_router)
 app.include_router(webhooks_router)
 app.include_router(disputes_router)
 app.include_router(threats_router)
 app.include_router(l402_router)
-app.include_router(copilot_router)
 
 
 @app.get("/api/health", tags=["System"])

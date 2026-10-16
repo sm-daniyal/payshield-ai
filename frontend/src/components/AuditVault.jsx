@@ -14,11 +14,8 @@ export default function AuditVault({
         <div>
           <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
             <Database className="w-5 h-5 text-emerald-600" />
-            Immutable Cryptographic Audit Vault
+            Append-Only Audit Log
           </h2>
-          <p className="text-xs text-gray-600 mt-1">
-            Every decision is signed with SHA-256 for tamper-proof regulatory reporting and banking compliance.
-          </p>
         </div>
         <button
           onClick={onExportAuditJson}
@@ -37,7 +34,7 @@ export default function AuditVault({
               <th className="py-3 px-4">Amount</th>
               <th className="py-3 px-4">Action</th>
               <th className="py-3 px-4">SHAP Additivity Delta</th>
-              <th className="py-3 px-4">SHA-256 Cryptographic Signature</th>
+              <th className="py-3 px-4">SHA-256 Hash</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 font-mono">
@@ -59,7 +56,7 @@ export default function AuditVault({
                   Δ = {tx.additivity_verification?.delta.toFixed(6) || "0.000018"} (PASS)
                 </td>
                 <td className="py-3.5 px-4 text-gray-400 text-[10px] truncate max-w-[220px]">
-                  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+                  {tx.sha256_hash || tx.audit_hash || "—"}
                 </td>
               </tr>
             ))}

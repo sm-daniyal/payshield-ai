@@ -11,7 +11,9 @@ Tests cover:
 from __future__ import annotations
 
 import os
+import uuid
 from pathlib import Path
+from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from fastapi.testclient import TestClient
 
@@ -173,17 +175,30 @@ class TestAuditStore:
 # ---------------------------------------------------------------------------
 
 class TestWebhookAndDisputeEndpoints:
-    def test_order_webhook_trigger(self):
+    @patch("httpx.AsyncClient.post", new_callable=AsyncMock)
+    def test_order_webhook_trigger(self, mock_post, monkeypatch):
+        monkeypatch.setattr("app.config.settings.paypal_webhook_id", "WH-MOCK-WEBHOOK-ID")
+        mock_post.return_value = MagicMock(
+            status_code=200,
+            json=lambda: {"verification_status": "SUCCESS"},
+        )
+        headers = {
+            "PAYPAL-TRANSMISSION-ID": f"WH-TX-ORDER-{uuid.uuid4().hex[:8]}",
+            "PAYPAL-TRANSMISSION-TIME": "2026-10-16T12:00:00Z",
+            "PAYPAL-TRANSMISSION-SIG": "mock_sig_base64",
+            "PAYPAL-CERT-URL": "https://api.sandbox.paypal.com/v1/notifications/certs/CERT-123",
+            "PAYPAL-AUTH-ALGO": "SHA256withRSA",
+        }
         payload = {
             "id": "WH-ORDER-EVT-01",
             "event_type": "CHECKOUT.ORDER.APPROVED",
             "resource": {
-                "id": "ORD-LIVE-WEBHOOK-99",
+                "id": f"ORD-LIVE-WEBHOOK-{uuid.uuid4().hex[:6]}",
                 "amount": {"value": "89.50", "currency_code": "USD"},
-                "payer": {"email_address": "buyer_wh@example.com"},
+                "payer": {"email_address": "safe.buyer@example.com"},
             },
         }
-        res = client.post("/api/v1/paypal/webhook", json=payload)
+        res = client.post("/api/v1/paypal/webhook", json=payload, headers=headers)
         assert res.status_code == 200
         body = res.json()
         assert body["status"] == "PROCESSED"
@@ -191,17 +206,30 @@ class TestWebhookAndDisputeEndpoints:
         assert "risk_score" in body
         assert len(body["audit_hash"]) == 64
 
-    def test_dispute_webhook_trigger(self):
+    @patch("httpx.AsyncClient.post", new_callable=AsyncMock)
+    def test_dispute_webhook_trigger(self, mock_post, monkeypatch):
+        monkeypatch.setattr("app.config.settings.paypal_webhook_id", "WH-MOCK-WEBHOOK-ID")
+        mock_post.return_value = MagicMock(
+            status_code=200,
+            json=lambda: {"verification_status": "SUCCESS"},
+        )
+        headers = {
+            "PAYPAL-TRANSMISSION-ID": f"WH-TX-DISPUTE-{uuid.uuid4().hex[:8]}",
+            "PAYPAL-TRANSMISSION-TIME": "2026-10-16T12:00:00Z",
+            "PAYPAL-TRANSMISSION-SIG": "mock_sig_base64",
+            "PAYPAL-CERT-URL": "https://api.sandbox.paypal.com/v1/notifications/certs/CERT-123",
+            "PAYPAL-AUTH-ALGO": "SHA256withRSA",
+        }
         payload = {
             "id": "WH-DSP-EVT-02",
             "event_type": "CUSTOMER.DISPUTE.CREATED",
             "resource": {
-                "dispute_id": "PP-D-WEBHOOK-88",
+                "dispute_id": f"PP-D-WEBHOOK-{uuid.uuid4().hex[:6]}",
                 "dispute_amount": {"value": "160.00", "currency_code": "USD"},
                 "disputed_transactions": [{"seller_transaction_id": "TXN-ORIG-88"}],
             },
         }
-        res = client.post("/api/v1/paypal/webhook", json=payload)
+        res = client.post("/api/v1/paypal/webhook", json=payload, headers=headers)
         assert res.status_code == 200
         body = res.json()
         assert body["status"] == "PROCESSED"

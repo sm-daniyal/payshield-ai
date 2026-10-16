@@ -1,58 +1,28 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { CheckCircle2 } from 'lucide-react';
 
 // Data
 import {
   SAMPLE_TRANSACTIONS,
-  INITIAL_DISPUTES,
-  THREAT_NEWS_ITEMS,
-  THREAT_CATEGORIES
+  INITIAL_DISPUTES
 } from './data/mockData';
 
 // Modular Components
 import Navbar from './components/Navbar';
-import InformationHub from './components/InformationHub';
-import ProblemPage from './components/ProblemPage';
-import NewsletterPage from './components/NewsletterPage';
 import RiskRadar from './components/RiskRadar';
 import DisputeStudio from './components/DisputeStudio';
 import L402Console from './components/L402Console';
-import Copilot from './components/Copilot';
 import AuditVault from './components/AuditVault';
-import Simulator from './components/Simulator';
 
 export default function App() {
-  const [activePortal, setActivePortal] = useState('hub');
-  const [activeProblemId, setActiveProblemId] = useState(null);
+  const [activePortal, setActivePortal] = useState('radar');
 
   // Core Data State
   const [transactions, setTransactions] = useState(SAMPLE_TRANSACTIONS);
   const [selectedTx, setSelectedTx] = useState(SAMPLE_TRANSACTIONS[1]);
   const [disputes, setDisputes] = useState(INITIAL_DISPUTES);
-  const [threatNews, setThreatNews] = useState(THREAT_NEWS_ITEMS);
   const [isSimulating, setIsSimulating] = useState(false);
   const [submissionFeedback, setSubmissionFeedback] = useState(null);
-
-  // Hub / View Mode State
-  const [threatViewMode, setThreatViewMode] = useState('columns');
-  const [selectedThreatCategory, setSelectedThreatCategory] = useState('ALL');
-
-  // Newsletter State
-  const [newsletterEmail, setNewsletterEmail] = useState("");
-  const [newsletterFrequency, setNewsletterFrequency] = useState('DAILY');
-  const [newsletterSuccess, setNewsletterSuccess] = useState(false);
-  const [newsletterSubResult, setNewsletterSubResult] = useState(null);
-
-  // Copilot State
-  const [copilotQuery, setCopilotQuery] = useState("");
-  const [copilotLoading, setCopilotLoading] = useState(false);
-  const [copilotHistory, setCopilotHistory] = useState([
-    {
-      sender: "copilot",
-      text: "Welcome to PayShield Copilot. I analyze transaction risk scores, explain SHAP feature attributions, and compute dispute viability against PayPal's $15 fee equation. How can I help you today?",
-      evidence: ["Pre-Capture Calibrated Risk", "Dispute ROI Engine ($15 fee)", "L402 Agentic Protocol"]
-    }
-  ]);
 
   // L402 Machine-to-Machine State
   const [l402Step, setL402Step] = useState(0);
@@ -61,18 +31,6 @@ export default function App() {
   const [l402PaymentResult, setL402PaymentResult] = useState(null);
   const [l402UnlockedData, setL402UnlockedData] = useState(null);
   const [l402Copied, setL402Copied] = useState(false);
-
-  // Fetch threat bulletins on mount
-  useEffect(() => {
-    fetch('/api/v1/threats')
-      .then((res) => res.json())
-      .then((data) => {
-        if (Array.isArray(data) && data.length > 0) {
-          setThreatNews(data);
-        }
-      })
-      .catch(() => {});
-  }, []);
 
   // Quick simulation trigger
   const handleSimulate = async (type) => {
@@ -172,70 +130,6 @@ export default function App() {
     }
   };
 
-  const handleCopilotSubmit = async (customQuery = null) => {
-    const q = customQuery || copilotQuery;
-    if (!q.trim()) return;
-
-    const userMessage = { sender: "user", text: q };
-    setCopilotHistory(prev => [...prev, userMessage]);
-    setCopilotQuery("");
-    setCopilotLoading(true);
-
-    try {
-      const res = await fetch('/api/v1/copilot/query', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          query: q,
-          context_type: q.toLowerCase().includes("dispute") ? "DISPUTE" : "TRANSACTION"
-        })
-      });
-      const data = await res.json();
-      setCopilotHistory(prev => [
-        ...prev,
-        {
-          sender: "copilot",
-          text: data.answer,
-          suggestion: data.action_suggestion,
-          evidence: data.grounded_evidence
-        }
-      ]);
-    } catch (e) {
-      setCopilotHistory(prev => [
-        ...prev,
-        {
-          sender: "copilot",
-          text: "Grounded analysis: Under PayPal seller protection guidelines, disputes with verifiable carrier delivery proof achieve >75% win rates. For low-dollar disputes (<$20), contesting is uneconomic due to the non-refundable $15 fee.",
-          suggestion: "INSPECT_RULES",
-          evidence: ["PayPal $15 Fee Benchmark", "Carrier Tracking Rules"]
-        }
-      ]);
-    } finally {
-      setCopilotLoading(false);
-    }
-  };
-
-  const handleAskCopilot = (prompt) => {
-    setActivePortal('copilot');
-    handleCopilotSubmit(prompt);
-  };
-
-  const handleDeployMitigation = (ruleName) => {
-    setActivePortal('radar');
-    setSubmissionFeedback(`Active Defense Policy Deployed: ${ruleName} is now actively enforcing limits on live PayPal order ingestion.`);
-    setTimeout(() => setSubmissionFeedback(null), 6000);
-  };
-
-  const handleSelectProblem = (catId) => {
-    setActiveProblemId(catId);
-    setActivePortal('problem');
-  };
-
-  const handleOpenNewsletter = () => {
-    setActivePortal('newsletter');
-    setActiveProblemId(null);
-  };
-
   // L402 Gateway Handlers
   const handleL402FetchChallenge = async () => {
     setL402TerminalLoading(true);
@@ -311,8 +205,8 @@ export default function App() {
         status: "UNLOCKED",
         protocol: "L402",
         access_granted: true,
-        data: threatNews,
-        message: "Authorized via PayPal L402 cryptographic HMAC token."
+        data: [],
+        message: "Authorized via PayPal L402 HMAC token."
       });
       setL402Step(3);
     } finally {
@@ -327,59 +221,23 @@ export default function App() {
     setL402UnlockedData(null);
   };
 
-  // Newsletter Subscription
-  const handleNewsletterSubmit = async (e) => {
-    e.preventDefault();
-    if (!newsletterEmail.trim()) return;
-    try {
-      const res = await fetch('/api/v1/threats/newsletter/subscribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: newsletterEmail,
-          frequency: newsletterFrequency
-        })
-      });
-      const data = await res.json();
-      setNewsletterSubResult(data);
-      setNewsletterSuccess(true);
-      setNewsletterEmail("");
-      setTimeout(() => setNewsletterSuccess(false), 8000);
-    } catch (err) {
-      setNewsletterSubResult({
-        subscription_id: `SUB-${Math.random().toString(36).substring(2, 10).toUpperCase()}`,
-        email: newsletterEmail,
-        frequency: newsletterFrequency,
-        status: "ACTIVE",
-        message: `Successfully subscribed ${newsletterEmail} to The PayShield Merchant Dispatch (${newsletterFrequency}).`
-      });
-      setNewsletterSuccess(true);
-      setNewsletterEmail("");
-    }
-  };
-
   const handleExportAuditJson = () => {
     const jsonStr = JSON.stringify(transactions, null, 2);
     const blob = new Blob([jsonStr], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `payshield_cryptographic_audit_ledger_${Date.now()}.json`;
+    link.download = `payshield_audit_log_${Date.now()}.json`;
     link.click();
     URL.revokeObjectURL(url);
   };
 
-  // Active Category Object for Problem Page
-  const currentCategoryObj = THREAT_CATEGORIES.find((c) => c.id === activeProblemId) || THREAT_CATEGORIES[0];
-
   return (
     <div className="min-h-screen bg-[#f4f5f7] text-gray-900 flex flex-col font-sans">
-      {/* Top Umbrella Masthead & Navigation */}
+      {/* Top Navigation */}
       <Navbar
         activePortal={activePortal}
         setActivePortal={setActivePortal}
-        activeProblemId={activeProblemId}
-        setActiveProblemId={setActiveProblemId}
         onSimulate={handleSimulate}
         isSimulating={isSimulating}
       />
@@ -398,72 +256,16 @@ export default function App() {
           </div>
         )}
 
-        {/* 1. UMBRELLA DESK (4 COLUMNS) */}
-        {activePortal === 'hub' && (
-          <InformationHub
-            threatNews={threatNews}
-            threatCategories={THREAT_CATEGORIES}
-            threatViewMode={threatViewMode}
-            setThreatViewMode={setThreatViewMode}
-            selectedThreatCategory={selectedThreatCategory}
-            setSelectedThreatCategory={setSelectedThreatCategory}
-            onDeployMitigation={handleDeployMitigation}
-            onAskCopilot={handleAskCopilot}
-            onSelectProblem={handleSelectProblem}
-            onOpenNewsletter={handleOpenNewsletter}
-          />
-        )}
-
-        {/* 2. DEDICATED SEPARATE PAGE FOR EACH PROBLEM */}
-        {activePortal === 'problem' && (
-          <ProblemPage
-            category={currentCategoryObj}
-            allCategories={THREAT_CATEGORIES}
-            threatNews={threatNews}
-            onSelectProblem={handleSelectProblem}
-            onBackToDesk={() => {
-              setActivePortal('hub');
-              setActiveProblemId(null);
-            }}
-            onDeployMitigation={handleDeployMitigation}
-            onAskCopilot={handleAskCopilot}
-          />
-        )}
-
-        {/* 3. DEDICATED SEPARATE NEWSLETTER PAGE (3RD PURPOSE) */}
-        {activePortal === 'newsletter' && (
-          <NewsletterPage
-            newsletterEmail={newsletterEmail}
-            setNewsletterEmail={setNewsletterEmail}
-            newsletterFrequency={newsletterFrequency}
-            setNewsletterFrequency={setNewsletterFrequency}
-            onSubscribe={handleNewsletterSubmit}
-            subscriptionSuccess={newsletterSuccess}
-            subscriptionResult={newsletterSubResult}
-            onDismissSuccess={() => setNewsletterSuccess(false)}
-          />
-        )}
-
-        {/* 4. RISK RADAR */}
+        {/* 1. RISK RADAR */}
         {activePortal === 'radar' && (
           <RiskRadar
             transactions={transactions}
             selectedTx={selectedTx}
             setSelectedTx={setSelectedTx}
-            onAskCopilot={handleAskCopilot}
           />
         )}
 
-        {/* 5. $15 FEE DISPUTE STUDIO */}
-        {activePortal === 'disputes' && (
-          <DisputeStudio
-            disputes={disputes}
-            onDisputeSubmit={handleDisputeSubmit}
-            onAskCopilot={handleAskCopilot}
-          />
-        )}
-
-        {/* 6. L402 BOT TOLLGATE */}
+        {/* 2. L402 BOT TOLLGATE */}
         {activePortal === 'terminal' && (
           <L402Console
             l402Step={l402Step}
@@ -480,31 +282,19 @@ export default function App() {
           />
         )}
 
-        {/* 7. AI RISK COPILOT */}
-        {activePortal === 'copilot' && (
-          <Copilot
-            copilotQuery={copilotQuery}
-            setCopilotQuery={setCopilotQuery}
-            copilotHistory={copilotHistory}
-            copilotLoading={copilotLoading}
-            onCopilotSubmit={handleCopilotSubmit}
+        {/* 3. $15 FEE DISPUTE STUDIO */}
+        {activePortal === 'disputes' && (
+          <DisputeStudio
+            disputes={disputes}
+            onDisputeSubmit={handleDisputeSubmit}
           />
         )}
 
-        {/* 8. COMPLIANCE AUDIT VAULT */}
+        {/* 4. COMPLIANCE AUDIT VAULT */}
         {activePortal === 'audit' && (
           <AuditVault
             transactions={transactions}
             onExportAuditJson={handleExportAuditJson}
-          />
-        )}
-
-        {/* 9. ATTACK SIMULATOR */}
-        {activePortal === 'simulator' && (
-          <Simulator
-            isSimulating={isSimulating}
-            onSimulate={handleSimulate}
-            onInspectRadar={() => setActivePortal('radar')}
           />
         )}
       </main>

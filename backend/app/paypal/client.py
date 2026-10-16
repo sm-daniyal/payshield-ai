@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import base64
 import time
+import uuid
 from typing import Any
 import httpx
 
@@ -66,6 +67,7 @@ class PayPalClient:
         headers = {
             "Authorization": f"Basic {auth_header}",
             "Content-Type": "application/x-www-form-urlencoded",
+            "PayPal-Request-Id": str(uuid.uuid4()),
         }
         data = {"grant_type": "client_credentials"}
 
@@ -90,6 +92,81 @@ class PayPalClient:
             "Content-Type": "application/json",
             "Accept": "application/json",
         }
+
+    async def create_order(
+        self,
+        amount: float,
+        currency: str = "USD",
+        custom_id: str | None = None,
+        paypal_request_id: str | None = None,
+    ) -> dict[str, Any]:
+        """Create an order via PayPal Orders v2 API."""
+        if not self.is_configured:
+            return {
+                "id": f"ORD-MOCK-{uuid.uuid4().hex[:6].upper()}",
+                "status": "CREATED",
+                "intent": "CAPTURE",
+                "purchase_units": [
+                    {
+                        "amount": {"currency_code": currency, "value": f"{amount:.2f}"},
+                        "custom_id": custom_id or "",
+                    }
+                ],
+            }
+
+        headers = await self._get_auth_headers()
+        headers["PayPal-Request-Id"] = paypal_request_id or str(uuid.uuid4())
+        payload = {
+            "intent": "CAPTURE",
+            "purchase_units": [
+                {
+                    "amount": {"currency_code": currency, "value": f"{amount:.2f}"},
+                    "custom_id": custom_id or "",
+                }
+            ],
+        }
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.post(
+                f"{self.base_url}/v2/checkout/orders",
+                headers=headers,
+                json=payload,
+            )
+            resp.raise_for_status()
+            return resp.json()
+
+    async def capture_order(
+        self,
+        order_id: str,
+        paypal_request_id: str | None = None,
+    ) -> dict[str, Any]:
+        """Capture an approved order via PayPal Orders v2 API."""
+        if not self.is_configured:
+            return {
+                "id": order_id,
+                "status": "COMPLETED",
+                "purchase_units": [
+                    {
+                        "payments": {
+                            "captures": [
+                                {
+                                    "id": f"CAP-MOCK-{uuid.uuid4().hex[:6].upper()}",
+                                    "status": "COMPLETED",
+                                }
+                            ]
+                        }
+                    }
+                ],
+            }
+
+        headers = await self._get_auth_headers()
+        headers["PayPal-Request-Id"] = paypal_request_id or str(uuid.uuid4())
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.post(
+                f"{self.base_url}/v2/checkout/orders/{order_id}/capture",
+                headers=headers,
+            )
+            resp.raise_for_status()
+            return resp.json()
 
     async def get_order(self, order_id: str) -> dict[str, Any]:
         """Fetch details of an order from PayPal Orders v2 API."""
@@ -154,6 +231,7 @@ class PayPalClient:
         dispute_id: str,
         evidence_type: str,
         notes: str,
+        paypal_request_id: str | None = None,
     ) -> dict[str, Any]:
         """
         Submit proof/evidence to contest a dispute via PayPal Disputes v1 API:
@@ -169,6 +247,7 @@ class PayPalClient:
             }
 
         headers = await self._get_auth_headers()
+        headers["PayPal-Request-Id"] = paypal_request_id or str(uuid.uuid4())
         payload = {
             "evidence_type": evidence_type,
             "evidence_info": {"tracking_info": []},

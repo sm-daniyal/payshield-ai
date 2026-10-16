@@ -1,9 +1,9 @@
 """
-PayShield AI — Immutable SQLite Audit Store
+PayShield AI — Append-Only SQLite Audit Store
 
 Records every transaction evaluation, policy decision, and dispute recovery event.
-Every entry includes a cryptographic SHA-256 integrity hash to guarantee
-tamper-evident auditability for financial compliance.
+Every entry includes a SHA-256 integrity hash to guarantee
+tamper-evident auditability in the append-only audit log.
 """
 from __future__ import annotations
 
