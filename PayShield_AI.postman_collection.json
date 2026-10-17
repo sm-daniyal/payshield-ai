@@ -1,0 +1,88 @@
+{
+  "info": {
+    "name": "PayShield AI",
+    "description": "API collection for testing PayShield AI endpoints.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Trust Verdict (Risk Radar)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8000/api/v1/evaluate",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "v1",
+            "evaluate"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"transaction_id\": \"ORD-TEST-99\",\n  \"amount_usd\": 480.00,\n  \"buyer_email\": \"botnet_burst@disposable.cc\",\n  \"buyer_country\": \"US\",\n  \"shipping_country\": \"US\",\n  \"ip_country\": \"RO\",\n  \"buyer_currency\": \"USD\",\n  \"mid_market_rate_to_usd\": 1.0,\n  \"actual_rate_to_usd\": 1.0,\n  \"paypal_account_age_days\": 4,\n  \"paypal_account_verified\": false,\n  \"event_timestamp\": \"2026-10-17T12:00:00Z\",\n  \"history\": {\n    \"amounts\": [10.0, 10.0, 10.0],\n    \"timestamps\": [\"2026-10-17T11:55:00Z\"],\n    \"dispute_count\": 2\n  }\n}"
+        }
+      }
+    },
+    {
+      "name": "2. L402 Paywall Challenge",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "http://localhost:8000/api/v1/l402/threat-feed",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "v1",
+            "l402",
+            "threat-feed"
+          ]
+        }
+      }
+    },
+    {
+      "name": "3. L402 Pay Micropayment",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8000/api/v1/l402/payment-request",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "v1",
+            "l402",
+            "payment-request"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"payment_context_token\": \"PASTE-TOKEN-FROM-STEP-2-HERE\",\n  \"offer_id\": \"single_bulletin\",\n  \"agent_id\": \"postman_test_agent\"\n}"
+        }
+      }
+    }
+  ]
+}
