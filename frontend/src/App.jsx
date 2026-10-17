@@ -8,13 +8,17 @@ import {
 } from './data/mockData';
 
 // Modular Components
+import LandingPage from './components/LandingPage';
+import Sidebar from './components/Sidebar';
 import Navbar from './components/Navbar';
+import CopilotChat from './components/CopilotChat';
 import RiskRadar from './components/RiskRadar';
 import DisputeStudio from './components/DisputeStudio';
 import L402Console from './components/L402Console';
 import AuditVault from './components/AuditVault';
 
 export default function App() {
+  const [isEntered, setIsEntered] = useState(false);
   const [activePortal, setActivePortal] = useState('radar');
 
   // Core Data State
@@ -32,14 +36,16 @@ export default function App() {
   const [l402UnlockedData, setL402UnlockedData] = useState(null);
   const [l402Copied, setL402Copied] = useState(false);
 
-  // Quick simulation trigger
-  const handleSimulate = async (type) => {
+  // Quick simulation trigger (supports preset string or custom payload)
+  const handleSimulate = async (typeOrPayload) => {
     setIsSimulating(true);
     let payload;
     const now = new Date().toISOString();
     const nowMs = Date.now();
 
-    if (type === 'LEGIT') {
+    if (typeof typeOrPayload === 'object' && typeOrPayload !== null) {
+      payload = typeOrPayload;
+    } else if (typeOrPayload === 'LEGIT') {
       payload = {
         transaction_id: `ORD-${Math.floor(1000 + Math.random() * 9000)}-SAFE`,
         amount_usd: 75.00,
@@ -262,72 +268,92 @@ export default function App() {
     URL.revokeObjectURL(url);
   };
 
+  if (!isEntered) {
+    return <LandingPage onEnter={() => setIsEntered(true)} />;
+  }
+
   return (
-    <div className="min-h-screen bg-[#f4f5f7] text-gray-900 flex flex-col font-sans">
-      {/* Top Navigation */}
-      <Navbar
+    <div className="flex h-screen bg-[#F9FAFB] text-gray-900 font-sans overflow-hidden">
+      {/* Fixed Left Sidebar */}
+      <Sidebar
         activePortal={activePortal}
         setActivePortal={setActivePortal}
-        onSimulate={handleSimulate}
-        isSimulating={isSimulating}
       />
 
-      {/* Main Container */}
-      <main className="flex-1 p-6 md:p-8 overflow-auto">
-        {submissionFeedback && (
-          <div className="mb-6 max-w-7xl mx-auto bg-emerald-50 border border-emerald-300 text-emerald-900 px-4 py-3 rounded-lg flex items-center justify-between text-xs shadow-sm">
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-              <span className="font-semibold">{submissionFeedback}</span>
-            </div>
-            <button onClick={() => setSubmissionFeedback(null)} className="text-emerald-700 hover:underline font-medium">
-              Dismiss
-            </button>
+      {/* Main Content Column */}
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        {/* Streamlined Top Header */}
+        <Navbar
+          activePortal={activePortal}
+        />
+
+        {/* Scrollable Portal View Area */}
+        <main className="flex-1 overflow-y-auto p-6 md:p-8">
+          <div className="max-w-7xl mx-auto w-full">
+            {submissionFeedback && (
+              <div className="mb-6 bg-emerald-50 border border-emerald-300 text-emerald-900 px-4 py-3 rounded-xl flex items-center justify-between text-xs shadow-sm">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  <span className="font-semibold">{submissionFeedback}</span>
+                </div>
+                <button
+                  onClick={() => setSubmissionFeedback(null)}
+                  className="text-emerald-700 hover:underline font-medium cursor-pointer"
+                >
+                  Dismiss
+                </button>
+              </div>
+            )}
+
+            {/* 1. RISK RADAR */}
+            {activePortal === 'radar' && (
+              <RiskRadar
+                transactions={transactions}
+                selectedTx={selectedTx}
+                setSelectedTx={setSelectedTx}
+                onSimulate={handleSimulate}
+                isSimulating={isSimulating}
+              />
+            )}
+
+            {/* 2. L402 BOT TOLLGATE */}
+            {activePortal === 'terminal' && (
+              <L402Console
+                l402Step={l402Step}
+                l402Challenge={l402Challenge}
+                l402PaymentResult={l402PaymentResult}
+                l402UnlockedData={l402UnlockedData}
+                l402TerminalLoading={l402TerminalLoading}
+                l402Copied={l402Copied}
+                setL402Copied={setL402Copied}
+                onFetchChallenge={handleL402FetchChallenge}
+                onSettlePayment={handleL402SettlePayment}
+                onUnlockFeed={handleL402UnlockFeed}
+                onReset={handleL402Reset}
+              />
+            )}
+
+            {/* 3. $15 FEE DISPUTE STUDIO */}
+            {activePortal === 'disputes' && (
+              <DisputeStudio
+                disputes={disputes}
+                onDisputeSubmit={handleDisputeSubmit}
+              />
+            )}
+
+            {/* 4. COMPLIANCE AUDIT VAULT */}
+            {activePortal === 'audit' && (
+              <AuditVault
+                transactions={transactions}
+                onExportAuditJson={handleExportAuditJson}
+              />
+            )}
           </div>
-        )}
+        </main>
+      </div>
 
-        {/* 1. RISK RADAR */}
-        {activePortal === 'radar' && (
-          <RiskRadar
-            transactions={transactions}
-            selectedTx={selectedTx}
-            setSelectedTx={setSelectedTx}
-          />
-        )}
-
-        {/* 2. L402 BOT TOLLGATE */}
-        {activePortal === 'terminal' && (
-          <L402Console
-            l402Step={l402Step}
-            l402Challenge={l402Challenge}
-            l402PaymentResult={l402PaymentResult}
-            l402UnlockedData={l402UnlockedData}
-            l402TerminalLoading={l402TerminalLoading}
-            l402Copied={l402Copied}
-            setL402Copied={setL402Copied}
-            onFetchChallenge={handleL402FetchChallenge}
-            onSettlePayment={handleL402SettlePayment}
-            onUnlockFeed={handleL402UnlockFeed}
-            onReset={handleL402Reset}
-          />
-        )}
-
-        {/* 3. $15 FEE DISPUTE STUDIO */}
-        {activePortal === 'disputes' && (
-          <DisputeStudio
-            disputes={disputes}
-            onDisputeSubmit={handleDisputeSubmit}
-          />
-        )}
-
-        {/* 4. COMPLIANCE AUDIT VAULT */}
-        {activePortal === 'audit' && (
-          <AuditVault
-            transactions={transactions}
-            onExportAuditJson={handleExportAuditJson}
-          />
-        )}
-      </main>
+      {/* Floating Deterministic Copilot */}
+      <CopilotChat />
     </div>
   );
 }

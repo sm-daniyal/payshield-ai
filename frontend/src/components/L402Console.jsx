@@ -18,22 +18,21 @@ export default function L402Console({
   onReset
 }) {
   const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+  const bulletins = Array.isArray(l402UnlockedData?.data)
+    ? l402UnlockedData.data
+    : (Array.isArray(l402UnlockedData) ? l402UnlockedData : []);
 
   return (
     <div className="space-y-4 max-w-5xl mx-auto">
-      {/* L402 Banner Overview */}
-      <div className="bg-white border border-purple-200 rounded-lg p-5 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <span className="text-[11px] bg-purple-50 text-purple-700 border border-purple-200 font-mono px-2 py-0.5 rounded-full font-bold">
-              L402 Protocol • RFC 402 Specification
-            </span>
-            <span className="text-xs text-gray-500 font-mono">PayPal Orders v2 Micro-Settlement</span>
-          </div>
-          <h3 className="text-sm font-bold text-gray-900">Autonomous Machine-to-Machine Threat Intelligence Licensing</h3>
-          <p className="text-xs text-gray-600 max-w-3xl leading-relaxed">
-            AI crawlers, risk bots, and merchant subagents cannot click buttons or fill out forms. The L402 protocol enables programmatic access: servers return <code className="text-purple-700 bg-purple-50 px-1 py-0.5 rounded font-mono">HTTP 402 Payment Required</code>, bots execute instant PayPal micro-captures ($0.05 USD), receive HMAC-signed bearer tokens, and ingest zero-day threat feeds without human friction.
-          </p>
+      {/* L402 Header Bar */}
+      <div className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm flex items-center justify-between gap-4">
+        <div className="flex items-center gap-2.5">
+          <span className="text-xs bg-purple-50 text-purple-700 border border-purple-200 font-mono px-3 py-1 rounded-full font-bold">
+            L402 Protocol
+          </span>
+          <span className="text-xs text-gray-600 font-mono bg-gray-50 px-3 py-1 rounded-full border border-gray-200 font-medium">
+            PayPal Orders v2
+          </span>
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
@@ -43,14 +42,14 @@ export default function L402Console({
               setL402Copied(true);
               setTimeout(() => setL402Copied(false), 3000);
             }}
-            className="bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1.5 shadow-sm"
+            className="bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5 shadow-xs cursor-pointer"
           >
             {l402Copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
             {l402Copied ? "cURL Copied" : "Copy cURL"}
           </button>
           <button
             onClick={onReset}
-            className="text-gray-600 hover:text-gray-900 text-xs px-2.5 py-1.5 rounded bg-gray-100 border border-gray-200 transition"
+            className="text-gray-600 hover:text-gray-900 text-xs px-3 py-1.5 rounded-xl bg-gray-50 border border-gray-200 hover:bg-gray-100 transition cursor-pointer font-medium"
           >
             Reset Console
           </button>
@@ -139,31 +138,31 @@ export default function L402Console({
         </button>
       </div>
 
-      {/* Interactive Terminal Screen */}
-      <div className="bg-[#0f172a] border border-gray-800 rounded-lg overflow-hidden font-mono shadow-md">
-        {/* Terminal Window Header */}
-        <div className="bg-[#1e293b] px-4 py-2.5 border-b border-gray-700 flex items-center justify-between text-xs text-gray-400">
+      {/* Interactive Terminal Screen - Mac Terminal Style */}
+      <div className="bg-[#0D1117] border border-slate-800 rounded-2xl overflow-hidden font-mono shadow-2xl">
+        {/* Terminal Window Header (macOS style) */}
+        <div className="bg-[#161B22] px-4 py-3 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
           <div className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-rose-500 inline-block"></span>
-            <span className="w-3 h-3 rounded-full bg-amber-500 inline-block"></span>
-            <span className="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span>
-            <span className="ml-2 font-semibold text-gray-200">
+            <span className="w-3 h-3 rounded-full bg-[#FF5F56] inline-block"></span>
+            <span className="w-3 h-3 rounded-full bg-[#FFBD2E] inline-block"></span>
+            <span className="w-3 h-3 rounded-full bg-[#27C93F] inline-block"></span>
+            <span className="ml-2 font-mono text-slate-300 font-medium">
               agent-client@payshield: ~/l402-protocol-gateway
             </span>
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-[11px] text-gray-400">FastAPI + PayPal v2 Orders</span>
+            <span className="text-[11px] text-slate-400 font-mono">FastAPI + PayPal v2 Orders</span>
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
           </div>
         </div>
 
         {/* Terminal Viewport */}
-        <div className="p-4 space-y-4 min-h-[360px] text-xs leading-relaxed overflow-x-auto text-gray-300">
+        <div className="p-5 space-y-4 min-h-[360px] text-xs leading-relaxed overflow-x-auto text-slate-300 bg-[#0D1117]">
           {/* Initial State / Prompt */}
-          <div className="text-gray-400">
+          <div className="text-slate-400">
             <span className="text-emerald-400">agent@crawler-host:~$</span> # Interactive L402 Machine-to-Machine PayPal Sandbox
             <br />
-            <span className="text-gray-500">
+            <span className="text-slate-500">
               Click Step 1 above to simulate an autonomous crawler attempting to read the threat feed.
             </span>
           </div>
@@ -183,7 +182,7 @@ export default function L402Console({
                 <br />
                 Content-Type: application/json
               </div>
-              <pre className="text-gray-300 bg-black/60 p-3 rounded-lg border border-purple-900/30 overflow-x-auto">
+              <pre className="text-slate-300 bg-[#161B22] p-3.5 rounded-xl border border-slate-800 overflow-x-auto">
                 {JSON.stringify(l402Challenge, null, 2)}
               </pre>
             </div>
@@ -202,7 +201,7 @@ export default function L402Console({
               <div className="text-emerald-400 font-semibold">
                 [PayPal Orders v2] Transaction CAPTURE Completed • Status: 200 OK
               </div>
-              <pre className="text-gray-300 bg-black/60 p-3 rounded-lg border border-blue-900/30 overflow-x-auto">
+              <pre className="text-slate-300 bg-[#161B22] p-3.5 rounded-xl border border-slate-800 overflow-x-auto">
                 {JSON.stringify(l402PaymentResult, null, 2)}
               </pre>
             </div>
@@ -210,18 +209,96 @@ export default function L402Console({
 
           {/* Step 3 Output */}
           {l402Step >= 3 && (
-            <div className="space-y-2 border-l-2 border-emerald-500/60 pl-3">
+            <div className="space-y-4 border-l-2 border-emerald-500/60 pl-3">
               <div className="text-emerald-300 font-bold">
                 <span className="text-emerald-400">agent@crawler-host:~$</span> curl -i -X GET {API_BASE}/api/v1/l402/threat-feed \
                 <br />
                 &nbsp;&nbsp;-H "Authorization: Bearer {l402PaymentResult?.bearer_token || 'l402_9f81a7b4...'}"
               </div>
-              <div className="text-emerald-400 font-semibold">
-                HTTP/1.1 200 OK • ACCESS UNLOCKED VIA PAYPAL L402 HMAC BEARER TOKEN
+              <div className="text-emerald-400 font-semibold flex items-center justify-between flex-wrap gap-2">
+                <span>HTTP/1.1 200 OK • ACCESS UNLOCKED VIA PAYPAL L402 HMAC BEARER TOKEN</span>
+                <span className="text-[11px] font-mono text-emerald-300 bg-emerald-950/80 px-2.5 py-0.5 rounded border border-emerald-500/40">
+                  Micro-Settled: {l402PaymentResult?.amount_usd ? `$${l402PaymentResult.amount_usd} USD` : '$0.05 USD'}
+                </span>
               </div>
-              <pre className="text-gray-300 bg-black/60 p-3 rounded-lg border border-emerald-900/30 overflow-x-auto max-h-64">
-                {JSON.stringify(l402UnlockedData, null, 2)}
-              </pre>
+
+              {/* CrawlerPal News Editorial Threat Bulletins Grid */}
+              <div className="mt-6 space-y-5 font-sans text-gray-900">
+                {/* Sleek Black Badge with Gold Text */}
+                <div className="flex items-center justify-between p-4 rounded-xl bg-black border border-amber-500/40 shadow-md flex-wrap gap-3">
+                  <div className="flex items-center gap-3">
+                    <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
+                    <span className="text-xs font-mono font-bold tracking-wider uppercase text-amber-300">
+                      L402 PAYMENT CONFIRMED — PREMIUM ACCESS GRANTED
+                    </span>
+                  </div>
+                  <span className="text-xs text-amber-400 font-mono font-bold bg-amber-950/80 px-2.5 py-1 rounded-md border border-amber-500/30">
+                    {bulletins.length} Decrypted Intelligence Bulletins
+                  </span>
+                </div>
+
+                {/* 3-Column Editorial Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {bulletins.map((item) => (
+                    <div
+                      key={item.id}
+                      className="bg-white border border-gray-100 rounded-2xl p-6 flex flex-col justify-between shadow-sm hover:shadow-md hover:border-gray-200 transition-all group"
+                    >
+                      <div>
+                        {/* Meta Category Header: font-serif text-xl font-bold border-b border-gray-200 pb-2 */}
+                        <div className="flex items-start justify-between gap-2 mb-3">
+                          <h3 className="font-serif text-xl font-bold border-b border-gray-200 pb-2 text-gray-900 tracking-tight w-full">
+                            {(item.category || 'THREAT_FEED').replace(/_/g, ' ')}
+                          </h3>
+                        </div>
+
+                        <div className="flex items-center justify-between mb-3">
+                          <span
+                            className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase ${
+                              item.severity === 'CRITICAL'
+                                ? 'bg-rose-100 text-rose-800 border border-rose-200'
+                                : item.severity === 'ELEVATED'
+                                ? 'bg-amber-100 text-amber-800 border border-amber-200'
+                                : 'bg-blue-100 text-blue-800 border border-blue-200'
+                            }`}
+                          >
+                            {item.severity}
+                          </span>
+                          {item.published_at && (
+                            <span className="text-xs text-gray-400 font-sans">
+                              {new Date(item.published_at).toLocaleDateString(undefined, {
+                                month: 'short',
+                                day: 'numeric',
+                                year: 'numeric'
+                              })}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Editorial Headline */}
+                        <h4 className="text-base font-serif font-bold text-gray-900 group-hover:text-purple-600 transition-colors leading-snug mb-2.5">
+                          {item.headline}
+                        </h4>
+
+                        {/* Clean Sans-serif Summary */}
+                        <p className="text-xs font-sans text-gray-700 leading-relaxed mb-4">
+                          {item.summary}
+                        </p>
+                      </div>
+
+                      {/* Monospace Mitigation Rule in bg-gray-50 box */}
+                      <div className="pt-3 border-t border-gray-100">
+                        <div className="text-[11px] uppercase tracking-wider text-gray-500 font-mono font-semibold mb-1.5">
+                          Active Mitigation Rule:
+                        </div>
+                        <div className="bg-gray-50 border border-gray-200 font-mono text-xs text-gray-800 rounded-lg p-3 break-words leading-tight">
+                          <code>{item.mitigation_rule}</code>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
         </div>
