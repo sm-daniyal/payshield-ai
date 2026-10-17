@@ -109,3 +109,5 @@ class TransactionEvaluationResponse(BaseModel):
     additivity_verification: AdditivityVerification
     decision: PolicyDecision
     evaluation_timestamp: datetime
+    audit_hash: Optional[str] = Field(default=None, description="SHA-256 hash in audit ledger.")
+    audit_persisted: bool = Field(default=False, description="True if recorded in append-only audit store.")

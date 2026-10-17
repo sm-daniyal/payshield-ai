@@ -37,6 +37,7 @@ export default function App() {
     setIsSimulating(true);
     let payload;
     const now = new Date().toISOString();
+    const nowMs = Date.now();
 
     if (type === 'LEGIT') {
       payload = {
@@ -52,7 +53,17 @@ export default function App() {
         paypal_account_age_days: 850,
         paypal_account_verified: true,
         event_timestamp: now,
-        history: { amounts: [70.0, 75.0, 80.0], timestamps: [now], dispute_count: 0 }
+        history: {
+          amounts: [68.50, 75.25, 71.00, 80.00, 65.75],
+          timestamps: [
+            new Date(nowMs - 5 * 60 * 1000).toISOString(),
+            new Date(nowMs - 40 * 60 * 1000).toISOString(),
+            new Date(nowMs - 2 * 60 * 60 * 1000).toISOString(),
+            new Date(nowMs - 6 * 60 * 60 * 1000).toISOString(),
+            new Date(nowMs - 24 * 60 * 60 * 1000).toISOString(),
+          ],
+          dispute_count: 0
+        }
       };
     } else if (type === 'CARDING') {
       payload = {
@@ -68,7 +79,17 @@ export default function App() {
         paypal_account_age_days: 4,
         paypal_account_verified: false,
         event_timestamp: now,
-        history: { amounts: [10.0, 10.0, 10.0], timestamps: [now, now, now], dispute_count: 2 }
+        history: {
+          amounts: [9.50, 12.00, 10.75, 11.25, 9.95],
+          timestamps: [
+            new Date(nowMs - 3 * 60 * 1000).toISOString(),
+            new Date(nowMs - 8 * 60 * 1000).toISOString(),
+            new Date(nowMs - 15 * 60 * 1000).toISOString(),
+            new Date(nowMs - 22 * 60 * 1000).toISOString(),
+            new Date(nowMs - 30 * 60 * 1000).toISOString(),
+          ],
+          dispute_count: 3
+        }
       };
     } else {
       payload = {
@@ -84,7 +105,15 @@ export default function App() {
         paypal_account_age_days: 12,
         paypal_account_verified: false,
         event_timestamp: now,
-        history: { amounts: [20.0], timestamps: [now], dispute_count: 1 }
+        history: {
+          amounts: [20.00, 22.50, 19.00],
+          timestamps: [
+            new Date(nowMs - 3 * 24 * 60 * 60 * 1000).toISOString(),
+            new Date(nowMs - 5 * 24 * 60 * 60 * 1000).toISOString(),
+            new Date(nowMs - 8 * 24 * 60 * 60 * 1000).toISOString(),
+          ],
+          dispute_count: 1
+        }
       };
     }
 
@@ -97,6 +126,7 @@ export default function App() {
       const data = await res.json();
       const newEntry = {
         ...data,
+        ...(data.decision || {}),
         buyer_email: payload.buyer_email,
         buyer_country: payload.buyer_country,
         shipping_country: payload.shipping_country,

@@ -1,0 +1,14 @@
+services:
+  payshield-ai:
+    build: .
+    container_name: payshield-ai
+    ports:
+      - "8000:8000"
+    environment:
+      - PAYPAL_BASE_URL=https://api-m.sandbox.paypal.com
+    volumes:
+      - audit_data:/app/backend
+    restart: unless-stopped
+
+volumes:
+  audit_data:
