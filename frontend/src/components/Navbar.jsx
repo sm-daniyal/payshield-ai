@@ -40,7 +40,7 @@ export default function Navbar({ activePortal }) {
   const Icon = current.icon;
 
   return (
-    <header className="bg-white border-b border-gray-100 px-8 py-3.5 flex items-center justify-between shrink-0 shadow-xs">
+    <header className="bg-white border-b border-gray-200/80 shadow-[0_1px_0_0_rgba(0,0,0,0.06)] px-8 py-3.5 flex items-center justify-between shrink-0">
       {/* Left Side: Page Title */}
       <div className="flex items-center gap-3">
         <div className="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100/60 shadow-xs">

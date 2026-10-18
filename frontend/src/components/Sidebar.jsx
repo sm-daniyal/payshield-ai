@@ -94,12 +94,12 @@ export default function Sidebar({ activePortal, setActivePortal }) {
                   onClick={() => setActivePortal(item.id)}
                   className={`w-full py-3 px-4 rounded-xl text-sm font-semibold border transition-all text-left flex items-center justify-between cursor-pointer ${
                     isActive
-                      ? 'bg-indigo-50 border-indigo-200 text-indigo-600 font-bold shadow-xs'
+                      ? 'bg-indigo-600 border-indigo-600 text-white font-bold shadow-md shadow-indigo-200'
                       : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300'
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <Icon className={`w-4 h-4 ${isActive ? 'text-indigo-600' : 'text-gray-500'}`} />
+                    <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-gray-500'}`} />
                     <span>{item.label}</span>
                   </div>
                   {isActive && (

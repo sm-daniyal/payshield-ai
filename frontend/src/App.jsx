@@ -274,7 +274,7 @@ export default function App() {
   }
 
   return (
-    <div className="flex h-screen bg-[#F9FAFB] text-gray-900 font-sans overflow-hidden">
+    <div className="flex h-screen bg-[#F4F5F7] text-gray-900 font-sans overflow-hidden">
       {/* Fixed Left Sidebar */}
       <Sidebar
         activePortal={activePortal}

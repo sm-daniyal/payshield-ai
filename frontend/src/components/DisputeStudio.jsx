@@ -13,19 +13,19 @@ export default function DisputeStudio({
     <div className="space-y-6 max-w-7xl mx-auto">
       {/* 3 Metric Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white border border-gray-200 p-5 rounded-lg shadow-sm">
+        <div className="bg-white border border-gray-100 p-6 rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.06)]">
           <div className="text-[11px] text-gray-500 uppercase font-semibold">PayPal Dispute Fee Standard</div>
           <div className="text-2xl font-bold font-mono text-gray-900 mt-1">$15.00 USD</div>
           <p className="text-xs text-gray-500 mt-1">Non-refundable fee assessed by PayPal on contested claims.</p>
         </div>
-        <div className="bg-white border border-gray-200 p-5 rounded-lg shadow-sm">
+        <div className="bg-white border border-gray-100 p-6 rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.06)]">
           <div className="text-[11px] text-gray-500 uppercase font-semibold">Autonomous Recovery Model</div>
           <div className="text-base font-bold font-mono text-emerald-700 mt-1">
             Expected EV = (P_win × Amount) - $15.00
           </div>
           <p className="text-xs text-gray-500 mt-1">Automatically writes off negative EV disputes to protect merchant funds.</p>
         </div>
-        <div className="bg-white border border-gray-200 p-5 rounded-lg shadow-sm">
+        <div className="bg-white border border-gray-100 p-6 rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.06)]">
           <div className="text-[11px] text-gray-500 uppercase font-semibold">Net Active Recovery ROI</div>
           <div className="text-2xl font-bold font-mono text-emerald-700 mt-1">+$147.30 Net EV</div>
           <p className="text-xs text-gray-500 mt-1">3 disputes analyzed; 1 auto-written off, 2 defended.</p>
@@ -59,7 +59,7 @@ export default function DisputeStudio({
               {disputes.map((d) => {
                 const isNegative = d.expected_net_recovery <= 0;
                 return (
-                  <tr key={d.dispute_id} className="hover:bg-gray-50 transition">
+                  <tr key={d.dispute_id} className="hover:bg-slate-50 transition-colors duration-100 cursor-default">
                     <td className="py-3.5 px-4 font-bold text-gray-900">
                       {d.dispute_id}
                       <div className="text-[11px] text-gray-500 font-normal">{d.reason}</div>

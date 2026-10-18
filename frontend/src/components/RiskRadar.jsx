@@ -220,7 +220,7 @@ export default function RiskRadar({
                 <button
                   type="submit"
                   disabled={isSimulating}
-                  className="w-full py-3.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm flex items-center justify-center gap-2 cursor-pointer shadow-sm transition disabled:opacity-50"
+                  className="w-full py-3.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-700 active:bg-slate-950 active:scale-[0.98] text-white font-semibold text-sm flex items-center justify-center gap-2 cursor-pointer shadow-md hover:shadow-lg transition-all duration-150 disabled:opacity-50"
                 >
                   <Zap className="w-4 h-4 text-amber-300" />
                   <span>{isSimulating ? "Scoring Pipeline..." : "Inject Transaction"}</span>
