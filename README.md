@@ -1,183 +1,382 @@
 # PayShield AI
 
-**The Pre-Transaction Trust Layer for Agentic Commerce on PayPal.**
+> **The Autonomous Trust & Monetization Layer for Agentic Commerce on PayPal.**
 
-PayShield AI is a unified trust and monetization engine that distinguishes legitimate AI agents from malicious bots at checkout, blocks card-testing fraud before capture, charges legitimate bots via an L402 PayPal paywall, and autonomously recovers disputed revenue through a policy-bounded EV engine.
-
-> **Prototype scope.** Built for the PayPal AI Hackathon 2026 using synthetic transaction data. Not connected to a live payment processor (uses PayPal Sandbox/mocks). No authentication. Not production-hardened. See [Limitations](#limitations--prototype-scope) below for what this means for the reported metrics.
+PayShield AI is a three-module fraud defense and revenue recovery platform built natively on PayPal's REST APIs. It scores every inbound transaction with a mathematically auditable LightGBM model, gates bot traffic behind an HTTP 402 machine-payment tollgate settled via PayPal Orders v2, and autonomously recovers disputed revenue through a tier-aware expected-value engine — all without a human in the loop.
 
 [![CI Pipeline](https://github.com/sm-daniyal/payshield-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/sm-daniyal/payshield-ai/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.12+](https://img.shields.io/badge/Python-3.12%2B-blue)](https://www.python.org/)
+[![Tests](https://img.shields.io/badge/tests-63%20passing-brightgreen)](https://github.com/sm-daniyal/payshield-ai/actions)
 
-![Landing Page](screenshots/landing_page.png)
-
----
-
-## Contents
-
-[The problem](#the-problem) · [Architecture](#architecture) · [ML pipeline](#ml-pipeline) · [Model results](#model--evaluation-results) · [Decision engine](#decision-engine) · [Payments Security](#payments-security) · [API](#api) · [Frontend](#frontend--dashboard) · [Project structure](#project-structure) · [Testing](#testing) · [Limitations](#limitations--prototype-scope)
+![PayShield Landing](screenshots/landing_page.png)
 
 ---
 
-## The problem
+## Table of Contents
 
-PayPal merchants lose profit to three unaddressed problems:
+[The Problem](#the-problem) · [How It Works](#how-it-works) · [Architecture](#architecture) · [ML Pipeline](#ml-pipeline) · [Model Results](#model--evaluation-results) · [Decision Engine](#decision-engine) · [L402 Tollgate](#l402-tollgate--agentic-commerce) · [Dispute Recovery](#dispute-recovery-engine) · [Payments Security](#payments-security) · [API Reference](#api-reference) · [Frontend](#frontend--dashboard) · [Project Structure](#project-structure) · [Local Setup](#local-setup) · [Testing](#testing) · [Limitations](#limitations--prototype-scope)
 
-1. **Card Testing Fraud:** Bots run micro-purchases to validate stolen cards. Visa estimates enumeration attacks drive $1.1B in annual fraud losses. Traditional CAPTCHAs fail against AI scrapers.
-2. **The $15 Dispute Fee Trap:** PayPal assesses a non-refundable $15 fee on contested disputes. Fighting a $12 claim is a guaranteed loss: `EV = (0.50 × $12) - $15 = -$9.00`. Merchants lack the math to know when to concede.
-3. **Unmonetized Bot Traffic:** Autonomous agents scrape catalogs for free, draining server bandwidth.
+---
 
-PayShield solves this by acting as a causal pipeline: Stage 1 (Trust Verdict) scores the transaction. Stage 2 (L402 Paywall) monetizes the legitimate bots. Stage 3 (Dispute EV) recovers revenue post-capture.
+## The Problem
+
+PayPal merchants face three unaddressed revenue leaks that compound silently:
+
+1. **Card Testing Fraud** — Bots run micro-purchases (\$9–\$12) to validate stolen card numbers against real merchant endpoints. Visa estimates enumeration attacks drive \$1.1B in annual fraud losses. Traditional CAPTCHAs fail against AI-native scrapers.
+
+2. **The \$15 Dispute Fee Trap** — PayPal assesses a non-refundable filing fee on every contested dispute. Fighting a \$12 claim at 50% win probability is a guaranteed \$9 loss: `EV = (0.50 × $12) − $15 = −$9.00`. Merchants lack the math to know when conceding is the financially correct decision.
+
+3. **Unmonetized Bot Traffic** — Legitimate AI agents and price aggregators scrape product catalogs for free, consuming server bandwidth without generating revenue.
+
+PayShield solves all three in a single causal pipeline: score the transaction → monetize legitimate bots → recover disputed funds.
+
+---
+
+## How It Works
+
+### Module 1 — Risk Radar (Pre-Transaction Trust Scoring)
+Every transaction is scored by a LightGBM model calibrated via Platt scaling. The model computes 7 leakage-safe features from the request payload, returns a 0–100 risk score, and generates SHAP feature attributions with a mathematical additivity proof. A deterministic 5-rule policy engine converts the probability to a bounded action (`ALLOW`, `ALLOW_WITH_MONITORING`, `STEP_UP_VERIFICATION`, `BLOCK_AND_FLAG_DISPUTE`). The policy engine is intentionally separated from the model — changing the display layer cannot silently change the enforcement decision.
+
+### Module 2 — L402 Tollgate (Agentic Commerce)
+When an autonomous agent hits the threat intelligence feed without a valid bearer token, the server returns `HTTP 402 Payment Required` with a machine-readable PayPal order offer. The agent autonomously calls PayPal's Orders v2 API, settles \$0.05, and receives an HMAC-signed bearer token granting access. No human authorization is required. This is the L402 machine-payment protocol running on real PayPal Sandbox infrastructure.
+
+### Module 3 — Dispute Studio (Autonomous Recovery)
+When a dispute webhook arrives, the EV engine computes `(P_win × dispute_amount) − filing_fee`, where `filing_fee` is looked up from a merchant-tier table (`standard: $15`, `advanced: $30`, `enterprise: $0`). Disputes with positive expected net recovery are automatically compiled into a structured evidence dossier and submitted to PayPal's Disputes v1 API. Negative EV disputes are auto-written off, protecting merchant cash flow from fee traps.
+
+---
 
 ## Architecture
 
 ```mermaid
 flowchart TD
-    A[Inbound Agent Request] --> B[Feature Pipeline<br/>7 leakage-safe signals]
-    B --> C[LightGBM Trust Scorer<br/>Platt-calibrated P_fraud]
-    C --> D[SHAP Explainer<br/>additivity sanity check]
-    D --> E{Deterministic Policy<br/>5 rules, threshold 0.20}
+    A[Inbound Transaction / Agent Request] --> B[Feature Pipeline\n7 leakage-safe signals]
+    B --> C[LightGBM Trust Scorer\nPlatt-calibrated P_fraud]
+    C --> D[SHAP Explainer\nadditivity sanity check Δ < 1e-4]
+    D --> E{Deterministic Policy\n5 rules, threshold 0.20}
     E -->|BLOCK| F[Audit + 403]
     E -->|STEP_UP| G[Audit + challenge]
     E -->|ALLOW| H[L402 Paywall check]
     E -->|MONITOR| H
-    H -->|No token| I[HTTP 402 Payment Required<br/>PayPal Orders v2 offer]
-    I --> J[Agent settles 0.05 USD<br/>PayPal Orders v2 CAPTURE]
+    H -->|No token| I[HTTP 402 Payment Required\nPayPal Orders v2 offer]
+    I --> J[Agent settles $0.05\nPayPal Orders v2 CAPTURE]
     J --> K[HMAC-signed bearer token]
-    K --> L[Unlock premium feed]
+    K --> L[Unlock premium threat feed]
     H -->|Valid token| L
-    L --> M[(Append-Only Audit Log)]
+    L --> M[(Append-Only Audit Log\nSHA-256 chained)]
     F --> M
     G --> M
-    O[Inbound Dispute] --> P[EV Engine<br/>P_win × Amount - 15]
-    P -->|EV ≤ 0| Q[Auto write-off]
-    P -->|EV > 0 + confidence| R[Compile dossier]
-    R --> S[PayPal Disputes v1<br/>provide-evidence]
-    Q --> M
-    S --> M
+    N[Inbound Dispute Webhook] --> O[EV Engine\nP_win × Amount − filing_fee]
+    O -->|EV ≤ 0| P[Auto write-off]
+    O -->|EV > 0| Q[Compile evidence dossier]
+    Q --> R[PayPal Disputes v1\nprovide-evidence]
+    P --> M
+    R --> M
 ```
 
-Three independently-auditable layers: the model estimates probability → a deterministic module converts it to a 0–100 risk score for legibility → a separate deterministic module decides the bounded action. Changing how risk is displayed can never silently change what action is taken. (See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)).
+Three independently auditable layers: the model estimates probability → a deterministic scorer converts it to a 0–100 legible risk number → a separate deterministic policy converts it to a bounded action. Each layer has its own test suite. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
-## ML pipeline
+---
 
-We trained a LightGBM model on a 10,000-sample synthetic dataset (1.5% fraud rate) to demonstrate our cost-optimization pipeline. We compared it against a Logistic Regression baseline.
+## ML Pipeline
 
-- **Features:** 7 engineered features (amount z-score, velocity windows, FX spread, geo mismatch, account risk).
-- **Calibration:** Platt scaling to ensure probabilities are mathematically aligned with reality.
-- **Thresholding:** We sweep thresholds (0.10 to 0.90) against an asymmetric financial cost function (FP penalty = $50, FN loss = 0.5 × amount).
+Trained a LightGBM binary classifier on a 10,000-sample synthetic dataset (1.5% fraud rate) to demonstrate a cost-optimization pipeline. Compared against a Logistic Regression baseline.
 
-## Model & evaluation results
+**Feature Engineering (7 signals, all computed from strictly prior data):**
 
-All numbers are on the held-out test set (never used during model selection or threshold tuning).
+| Feature | Description |
+|:---|:---|
+| `amount_zscore` | Deviation of current amount from buyer's historical mean (σ-normalized) |
+| `velocity_1h` | Transaction count in the 60-minute window preceding the event |
+| `velocity_24h` | Transaction count in the 24-hour window preceding the event |
+| `geo_mismatch` | Binary flag: buyer country ≠ IP country |
+| `fx_spread_deviation` | Fractional deviation of actual FX rate from mid-market benchmark |
+| `account_risk_score` | Composite of account age, verification status, and prior dispute count |
+| `amount_log` | Log-transformed transaction amount for heavy-tail normalization |
+
+**Training methodology:**
+- Platt scaling calibration to align raw probabilities with empirical fraud rates
+- Threshold sweep (0.10 → 0.90) against an asymmetric cost function: FP penalty = \$50, FN loss = 0.5 × transaction amount
+- Held-out test set never used during model selection or threshold tuning
+
+---
+
+## Model & Evaluation Results
+
+All metrics computed on a 2,000-transaction holdout set held out before training.
 
 | Model | Precision | Recall | F1 | ROC-AUC | FP | FN | Est. Cost (Holdout) |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| Logistic Regression (baseline) | 0.633 | 0.633 | 0.633 | 0.973 | 11 | 11 | $3,204.34 |
-| LightGBM (selected) | 0.553 | 0.700 | 0.618 | 0.986 | 17 | 9 | $3,021.73 |
+|:---|:---|:---|:---|:---|:---|:---|:---|
+| Logistic Regression (baseline) | 0.633 | 0.633 | 0.633 | 0.973 | 11 | 11 | \$3,204.34 |
+| **LightGBM (selected)** | **0.553** | **0.700** | **0.618** | **0.986** | **17** | **9** | **\$3,021.73** |
 
-Selected operating threshold: **0.20** — chosen by minimising expected cost. If we used the default 0.5 threshold, we would have cost the merchant $4,876. By sweeping the threshold, we identified **0.20** as the cost-optimal point, saving the merchant **$1,854**.
+**Selected operating threshold: `0.20`** — the point of minimum expected cost from the sweep. The default threshold of `0.5` would have cost the merchant \$4,876. Sweeping to `0.20` saves **\$1,854** per holdout period.
 
-**Honest Disclosure:** While Logistic Regression has a slightly higher F1 score, LightGBM saves the merchant money because it correctly catches more fraud (Recall 70% vs 63%). In fintech, the financial cost of a false negative far outweighs a false positive.
+LightGBM was selected over the higher-F1 Logistic Regression baseline because in fraud economics, false negatives (missed fraud) are significantly more costly than false positives (blocked legitimate orders). LightGBM's superior recall (70% vs 63%) translates directly to lower financial exposure.
+
+> **Honest disclosure:** The holdout set contains 30 positive fraud cases. The 0.986 ROC-AUC is high-variance at n=30. These metrics validate the pipeline architecture — they do not claim production-grade ML performance.
 
 ![Threshold vs F1](backend/ml/evaluation/chart_threshold_f1.png)
 ![Threshold vs Cost](backend/ml/evaluation/chart_threshold_cost.png)
 
-## Decision engine
+---
 
-A five-rule policy table converts a fraud probability (and transaction amount) into a bounded action recommendation. Rules fire in order; first match wins. (See [docs/DECISION_ENGINE.md](docs/DECISION_ENGINE.md)).
+## Decision Engine
 
-| Rule | Condition | Action |
-| :--- | :--- | :--- |
-| CRITICAL_BLOCK | probability ≥ 0.80 | BLOCK_AND_FLAG_DISPUTE |
-| HIGH_STEP_UP | probability ≥ 0.40 | STEP_UP_VERIFICATION |
-| MEDIUM_MONITOR | probability ≥ 0.20 | ALLOW_WITH_MONITORING |
-| LOW_ALLOW | (catch-all) | ALLOW |
+A five-rule policy table converts `(fraud_probability, amount_usd)` into a bounded enforcement action. Rules fire in priority order; first match wins. The policy engine accepts only these two scalar inputs — SHAP explanations are computed separately and cannot influence enforcement decisions.
 
-SHAP explanations cannot influence the action — `evaluate_policy()` accepts only `(probability, amount)`, enforced by function signature and verified by dedicated tests in `test_decision_engine.py`. (See [docs/EXPLAINABILITY.md](docs/EXPLAINABILITY.md)).
+| Priority | Rule ID | Condition | Action |
+|:---|:---|:---|:---|
+| 1 | `CRITICAL_BLOCK` | `probability ≥ 0.80` | `BLOCK_AND_FLAG_DISPUTE` |
+| 2 | `HIGH_STEP_UP` | `probability ≥ 0.40` | `STEP_UP_VERIFICATION` |
+| 3 | `MEDIUM_MONITOR` | `probability ≥ 0.20` | `ALLOW_WITH_MONITORING` |
+| 4 | `LOW_ALLOW` | catch-all | `ALLOW` |
+
+The additivity invariant is enforced in CI: `|sum(SHAP values) − model_output| < 1e-4` on every inference call. See [docs/DECISION_ENGINE.md](docs/DECISION_ENGINE.md) and [docs/EXPLAINABILITY.md](docs/EXPLAINABILITY.md).
+
+---
+
+## L402 Tollgate & Agentic Commerce
+
+The L402 flow demonstrates autonomous machine-to-machine payment settlement using PayPal as the payment rail:
+
+```
+Agent → GET /api/v1/l402/threat-feed (no token)
+Server ← HTTP 402 Payment Required + PayPal order offer ($0.05)
+Agent → POST /api/v1/l402/payment-request
+Server → PayPal Orders v2: create_order($0.05) → real PayPal Order ID
+Agent ← HMAC-signed bearer token (valid 24h)
+Agent → GET /api/v1/l402/threat-feed (Bearer token)
+Server ← HTTP 200 + premium threat intelligence payload
+```
+
+Every L402 order settlement hits the real PayPal Sandbox API (`api-m.sandbox.paypal.com`). The returned Order IDs are genuine 17-character PayPal identifiers (e.g. `9CU35940AF4321210`), not mock strings.
+
+---
+
+## Dispute Recovery Engine
+
+The EV engine applies financial decision theory to every inbound PayPal dispute webhook:
+
+```
+Expected Net Recovery = (P_win × dispute_amount_usd) − filing_fee
+
+Where filing_fee = DISPUTE_FEE_BY_TIER[merchant_tier]:
+  standard:   $15.00   (Default SMB tier)
+  advanced:   $30.00   (Seller Protection Plus)
+  enterprise: $0.00    (Negotiated waiver)
+```
+
+**Actions:**
+- `EV > 0` and `P_win ≥ 0.60` → `PROCEED_DIRECT_DISPUTE` (auto-file via PayPal Disputes v1)
+- `EV > 0` and `0.40 ≤ P_win < 0.60` → `ESCALATE_MANUAL_REVIEW`
+- `EV ≤ 0` → `AUTO_WRITE_OFF_UNECONOMIC` (protect merchant from fee traps)
+
+Win probability is computed from evidence signals: carrier delivery proof, AVS/CVV match, buyer dispute history, and customer communication records.
+
+---
 
 ## Payments Security
 
-- **Webhook Verification:** Every inbound PayPal webhook is verified via `/v1/notifications/verify-webhook-signature` before state mutation. Fails closed on timeout. (See `test_webhooks.py` and [docs/PAYPAL_INTEGRATION.md](docs/PAYPAL_INTEGRATION.md)).
-- **Idempotency:** Every outbound PayPal POST (Orders v2 / Disputes v1) includes a `PayPal-Request-Id` header to prevent double-charging.
-- **Audit Vault:** An append-only SQLite log chained via SHA-256 (`hash = SHA256(prev_hash + record)`). (See [docs/PAYMENT_SECURITY.md](docs/PAYMENT_SECURITY.md)).
+- **Webhook Signature Verification:** Every inbound PayPal webhook is verified via `/v1/notifications/verify-webhook-signature` before any state mutation. The `cert_url` header is validated to start with `https://api.paypal.com` or `https://api.sandbox.paypal.com` — rejecting SSRF attempts immediately with `HTTP 401`.
+- **TOCTOU-Safe Idempotency:** The webhook idempotency check uses `INSERT OR IGNORE` with WAL journal mode, eliminating the SELECT→INSERT race condition. Concurrent webhook retries cannot bypass the check.
+- **PayPal-Request-Id:** Every outbound PayPal POST (Orders v2, Disputes v1) includes a UUID idempotency header to prevent double-charging.
+- **NaN/Infinity Guard:** Immediately after `predict_proba`, the model runner validates the output with `math.isnan` / `math.isinf` and fails closed (probability = 1.0) on bad math.
+- **Append-Only Audit Vault:** SHA-256 chained audit log (`hash = SHA256(prev_hash + record)`). Every transaction and dispute decision is tamper-evident.
 
-## Frontend / dashboard
+See [docs/PAYPAL_INTEGRATION.md](docs/PAYPAL_INTEGRATION.md) and [docs/PAYMENT_SECURITY.md](docs/PAYMENT_SECURITY.md).
 
-A React/Vite dashboard for exploring the system. You can inject a transaction manually, view the fraud probability, see the SHAP-grounded explanation, and watch the L402 paywall settle a micro-payment.
+---
+
+## API Reference
+
+| Method | Endpoint | Description |
+|:---|:---|:---|
+| `POST` | `/api/v1/evaluate` | Score a transaction (ML + SHAP + policy decision) |
+| `GET` | `/api/v1/l402/threat-feed` | Fetch threat feed (returns 402 without valid bearer token) |
+| `POST` | `/api/v1/l402/payment-request` | Settle L402 micro-payment via PayPal, receive bearer token |
+| `POST` | `/api/v1/disputes/evaluate` | Run EV analysis on a dispute (no webhook required) |
+| `POST` | `/api/v1/disputes/{id}/submit` | Submit evidence dossier to PayPal Disputes v1 API |
+| `POST` | `/api/v1/paypal/webhook` | Inbound PayPal webhook handler (verified + idempotent) |
+| `GET` | `/api/v1/audit/transactions` | Query recent transaction audit records |
+| `GET` | `/api/v1/audit/disputes` | Query recent dispute audit records |
+| `GET` | `/api/docs` | Interactive Swagger UI |
+
+A complete Postman collection is included at the root: `PayShield_AI.postman_collection.json`. See [docs/POSTMAN.md](docs/POSTMAN.md) for usage.
+
+---
+
+## Frontend / Dashboard
+
+A React 19 + Vite + Tailwind CSS dashboard with four interactive portals:
 
 ![Risk Radar](screenshots/risk_radar.png)
-![L402 Terminal](screenshots/l402_terminal.png)
 
-## Project structure
+- **Risk Radar** — Inject synthetic transactions using quick presets (Legit / Carding / FX Manipulation) or custom parameters. View the calibrated risk score, SHAP waterfall with additivity proof badge, extracted feature signals, and policy decision in real time.
+- **L402 Tollgate** — Animate the full HTTP 402 → \$0.05 settlement → HTTP 200 flow step by step in an interactive terminal. Click "View Unlocked Premium Intelligence" to reveal the full threat intelligence payload in a modal editorial grid.
+- **Dispute Studio** — Browse the autonomous dispute recovery queue. Each dispute card shows EV calculation, win probability, evidence status, and a PayPal submission button.
+- **Audit Vault** — Browse the append-only SHA-256 chained transaction and dispute ledger. Export as JSON for offline analysis.
+
+![L402 Tollgate](screenshots/l402_terminal.png)
+
+---
+
+## Project Structure
 
 ```text
 payshield-ai/
 ├── backend/
-│   ├── app/        # FastAPI app: routes, schemas, services
-│   ├── ml/         # Training scripts, evaluation JSON, and matplotlib charts
-│   └── tests/      # pytest suite: ML, API, Webhook security, L402
-├── frontend/       # React 19 + Vite + Tailwind dashboard
-├── docs/           # Technical documentation (see [docs/README.md](docs/README.md) for index)
-├── screenshots/    # UI screenshots
-├── Dockerfile      # Multi-stage build
-├── docker-compose.yml # docker compose up --build
-├── PayShield_AI.postman_collection.json # Postman API tests
+│   ├── app/
+│   │   ├── api/              # FastAPI routers: evaluate, l402, disputes, webhooks
+│   │   ├── db/               # AuditStore: SHA-256 chained SQLite audit log
+│   │   ├── engine/           # feature_pipeline, model_runner, decision_engine, dispute_recovery
+│   │   ├── paypal/           # PayPalClient: Orders v2, Disputes v1, OAuth token cache
+│   │   ├── config.py         # Pydantic settings (reads from .env)
+│   │   └── main.py           # FastAPI app factory, CORS, router mounts
+│   ├── ml/
+│   │   ├── train.py          # LightGBM training + Platt calibration
+│   │   ├── evaluate.py       # Threshold sweep + cost analysis
+│   │   ├── models/           # Serialized .pkl model artifacts
+│   │   └── evaluation/       # holdout_metrics.json + matplotlib charts
+│   └── tests/
+│       ├── conftest.py           # Credential isolation fixture
+│       ├── test_feature_pipeline.py
+│       ├── test_ml_and_policy.py
+│       ├── test_paypal_and_disputes.py
+│       └── test_webhooks.py
+├── frontend/
+│   └── src/
+│       ├── components/
+│       │   ├── RiskRadar.jsx     # Transaction simulator + SHAP waterfall
+│       │   ├── L402Console.jsx   # Step-by-step L402 terminal + premium modal
+│       │   ├── DisputeStudio.jsx # EV dispute queue + PayPal submit
+│       │   ├── AuditVault.jsx    # SHA-256 audit ledger browser
+│       │   ├── CopilotChat.jsx   # Floating AI assistant
+│       │   ├── LandingPage.jsx   # Marketing entry page
+│       │   ├── Sidebar.jsx       # Portal navigation
+│       │   └── Navbar.jsx        # Top header with network status
+│       ├── data/mockData.js      # Seed transactions and disputes
+│       └── App.jsx               # State management + API handlers
+├── docs/                         # Technical documentation
+├── screenshots/                  # UI screenshots for README
+├── Dockerfile
+├── docker-compose.yml
+├── PayShield_AI.postman_collection.json
 ├── .env.example
 └── README.md
 ```
 
-## Local setup & running the project
+---
 
-Prerequisites: Python 3.12+, Node.js 20+.
+## Local Setup
+
+**Prerequisites:** Python 3.12+, Node.js 20+
 
 ### Option A — Docker (Recommended)
 
 ```bash
 docker-compose up --build
-# http://localhost:8000 → dashboard
-# http://localhost:8000/api/docs → interactive API docs
+# Dashboard:    http://localhost:8000
+# API Docs:     http://localhost:8000/api/docs
 ```
 
-### Option B — Local setup
+### Option B — Manual
 
 ```bash
-# 1. Backend
+# 1. Clone and configure environment
+git clone https://github.com/sm-daniyal/payshield-ai.git
+cd payshield-ai
+cp .env.example backend/.env
+# Edit backend/.env and add your PayPal Sandbox credentials
+
+# 2. Backend
 cd backend
 python -m venv .venv
-.venv\Scripts\activate
+.venv\Scripts\activate          # Windows
+# source .venv/bin/activate     # macOS/Linux
 pip install -r requirements.txt
-uvicorn app.main:app --reload
+uvicorn app.main:app --reload --port 8000
 
-# 2. Frontend (new terminal)
+# 3. Frontend (new terminal)
 cd frontend
 npm install
 npm run dev
 # Open http://localhost:5173
 ```
 
-## Testing & API Verification
+### PayPal Sandbox Setup
 
-We prioritize verification over claims. Our pytest suite covers webhook fail-closed behavior, ML additivity invariants, decision engine boundaries, and audit persistence.
+1. Go to [developer.paypal.com](https://developer.paypal.com) and log in.
+2. Navigate to **Apps & Credentials → Sandbox**.
+3. Open **Default Application** and copy your **Client ID** and **Secret**.
+4. Paste them into `backend/.env`:
+
+```dotenv
+PAYPAL_CLIENT_ID=your_client_id_here
+PAYPAL_CLIENT_SECRET=your_client_secret_here
+PAYPAL_BASE_URL=https://api-m.sandbox.paypal.com
+```
+
+Verify the live connection:
+
+```bash
+cd backend
+.venv\Scripts\python.exe -c "
+from app.paypal.client import PayPalClient
+import asyncio
+c = PayPalClient()
+print('Configured:', c.is_configured)
+token = asyncio.run(c.get_access_token())
+print('Real token:', not token.startswith('mock'))
+order = asyncio.run(c.create_order(amount=0.05))
+print('Order ID:', order.get('id'))
+"
+```
+
+---
+
+## Testing
+
+63 tests across five suites, all passing in CI:
 
 ```bash
 cd backend
 pytest tests/ -q
-# 100+ tests passing, covering test_webhooks.py, test_ml_and_policy.py, test_feature_pipeline.py, and test_paypal_and_disputes.py.
+# 63 passed, 8 warnings
 ```
 
-### Manual API Testing (Postman)
-A complete Postman collection is included at the root (`PayShield_AI.postman_collection.json`). It contains pre-configured requests for the Trust Verdict (`/api/v1/evaluate`) and the L402 Paywall flow. See `docs/POSTMAN.md` for usage instructions.
+| Test Suite | What It Verifies |
+|:---|:---|
+| `test_feature_pipeline.py` | Leakage guards, z-score edge cases (n=1, zero variance), velocity window strictness |
+| `test_ml_and_policy.py` | SHAP additivity invariant (`Δ < 1e-4`), decision boundary correctness, model load |
+| `test_paypal_and_disputes.py` | PayPal client mock paths, dispute EV economics, tiered fee correctness, audit persistence |
+| `test_webhooks.py` | Signature verification, `cert_url` domain validation, TOCTOU-safe idempotency, fail-closed behavior |
+| `test_l402_gateway.py` | L402 challenge issuance, payment settlement, bearer token validation, feed unlock |
 
-## Limitations / prototype scope
+---
 
-- **Synthetic data only.** The model was trained on a generator-controlled dataset to demonstrate the pipeline. No real payment data was used or claimed.
-- **Synthetic dataset variance.** The model was evaluated on a 2,000-transaction holdout set (30 fraud cases). While ROC-AUC is 0.986, the small positive class (n=30) means this metric is high-variance and intended only to validate the pipeline architecture, not to claim production ML performance.
-- **No live payment integration.** The system uses the PayPal Sandbox API. Every action is a recommendation label returned as data. The system cannot move actual money.
-- **Simulated L402 settlement.** The L402 flow mocks the PayPal Orders v2 capture by generating a `PP-L402-<uuid>` string locally. In production, this would call `PayPalClient.create_order()` and `capture_order()` against the live PayPal API.
-- **No authentication.** The API and dashboard have no login/access control.
-- **SQLite audit storage.** Appropriate for a prototype; not a production audit solution.
-- **SQLite scaling ceiling.** SQLite is used for the audit and idempotency stores to prove the logic is sound. It has a practical write ceiling of ~1,000-5,000 TPS. Production migration would move idempotency to Redis (`SET NX EX`) and the audit log to PostgreSQL or Kafka.
-- **Docker not end-to-end run-tested locally.** The `Dockerfile` and `docker-compose.yml` are provided and validated against CI base images, but development was done using local Uvicorn servers. If Docker fails on your machine, run the local setup command.
-- **Cold-start transactions.** Customers with no prior history are scored neutrally. Production systems would query a live customer database.
+## Limitations / Prototype Scope
 
+- **Synthetic training data.** No real payment data was used or claimed. The model was trained on a generator-controlled dataset to demonstrate the cost-optimization pipeline.
+- **Small holdout positive class.** The 2,000-transaction holdout contains 30 fraud cases. ROC-AUC of 0.986 is high-variance at n=30 and validates pipeline architecture, not production ML performance.
+- **PayPal Sandbox only.** All PayPal API calls target `api-m.sandbox.paypal.com`. No real money moves.
+- **No authentication.** The API and dashboard have no login or access control layer.
+- **SQLite scaling ceiling.** SQLite is used for the audit and idempotency stores to prove the logic. It has a practical write ceiling of ~1,000–5,000 TPS. Production migration would move idempotency to Redis (`SET NX EX`) and audit logs to PostgreSQL or Kafka.
+- **Cold-start customers.** Buyers with no prior transaction history are scored neutrally. Production systems would query a live customer database for enrichment.
+- **Docker not locally run-tested end-to-end.** `Dockerfile` and `docker-compose.yml` are validated against CI base images. Development was done using local Uvicorn servers. If Docker fails, use the manual setup above.
+
+---
+
+## Built With
+
+- **Backend:** Python 3.12, FastAPI, LightGBM, SHAP, Pydantic v2, SQLite, httpx
+- **Frontend:** React 19, Vite, Tailwind CSS, Lucide React
+- **ML:** LightGBM, scikit-learn (Platt calibration, threshold sweep), matplotlib
+- **Payments:** PayPal Orders v2 API, PayPal Disputes v1 API, PayPal Webhook Verification
+- **CI:** GitHub Actions
+
+---
+
+## License
+
+MIT © 2026 Syed Daniyal
