@@ -19,7 +19,12 @@ from typing import Any, NamedTuple
 from pydantic import BaseModel, Field
 
 
-DISPUTE_FILING_FEE_USD = 15.00
+DISPUTE_FEE_BY_TIER: dict[str, float] = {
+    "standard":  15.00,   # Default SMB tier
+    "advanced":  30.00,   # Seller Protection Plus
+    "enterprise": 0.00,   # Negotiated
+}
+DISPUTE_FILING_FEE_USD = 15.00  # Default backward-compatibility alias
 RECOVERY_THRESHOLD = 0.40
 
 ACTION_PROCEED_DIRECT_DISPUTE = "PROCEED_DIRECT_DISPUTE"
@@ -95,14 +100,18 @@ def generate_evidence_dossier(evidence: DisputeEvidenceInput, win_prob: float) -
     return "\n".join(lines)
 
 
-def evaluate_dispute_recovery(evidence: DisputeEvidenceInput) -> DisputeAssessmentResult:
+def evaluate_dispute_recovery(
+    evidence: DisputeEvidenceInput,
+    merchant_tier: str = "standard",
+) -> DisputeAssessmentResult:
     """
     Apply economic recovery optimization to an incoming PayPal dispute.
     Strictly separates profitable disputes from uneconomic fee sinks.
     """
+    filing_fee = DISPUTE_FEE_BY_TIER.get(merchant_tier, 15.00)
     p_win = compute_win_probability(evidence)
     # Expected Net Recovery = (P_win * amount) - PayPal dispute fee
-    expected_net = (p_win * evidence.dispute_amount_usd) - DISPUTE_FILING_FEE_USD
+    expected_net = (p_win * evidence.dispute_amount_usd) - filing_fee
     expected_net = round(expected_net, 2)
 
     dossier = generate_evidence_dossier(evidence, p_win)
@@ -116,7 +125,7 @@ def evaluate_dispute_recovery(evidence: DisputeEvidenceInput) -> DisputeAssessme
             action=ACTION_AUTO_WRITE_OFF_UNECONOMIC,
             reasoning=(
                 f"Negative expected recovery (${expected_net:.2f}). "
-                f"Filing fee of ${DISPUTE_FILING_FEE_USD:.2f} exceeds expected return "
+                f"Filing fee of ${filing_fee:.2f} exceeds expected return "
                 f"({p_win*100:.1f}% of ${evidence.dispute_amount_usd:.2f})."
             ),
             evidence_dossier=dossier,

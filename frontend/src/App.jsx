@@ -71,7 +71,7 @@ export default function App() {
           dispute_count: 0
         }
       };
-    } else if (type === 'CARDING') {
+    } else if (typeOrPayload === 'CARDING') {
       payload = {
         transaction_id: `ORD-${Math.floor(1000 + Math.random() * 9000)}-CARDING`,
         amount_usd: 480.00,
@@ -123,6 +123,7 @@ export default function App() {
       };
     }
 
+    setSelectedTx(null);
     try {
       const res = await fetch('/api/v1/evaluate', {
         method: 'POST',

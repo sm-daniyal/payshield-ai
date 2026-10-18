@@ -125,6 +125,31 @@ class TestDisputeRecoveryEconomics:
         assert res.expected_net_recovery > 0.0
         assert res.action in [ACTION_ESCALATE_MANUAL_REVIEW, ACTION_PROCEED_DIRECT_DISPUTE]
 
+    def test_tiered_merchant_fees(self):
+        evidence = DisputeEvidenceInput(
+            dispute_id="DSP-TIER-04",
+            transaction_id="TXN-004",
+            dispute_amount_usd=50.00,
+            has_carrier_delivery_proof=True,
+            has_avs_cvv_match=False,
+            buyer_prior_disputes=1,  # baseline (0.12) + delivery (0.38) = 0.50 win rate
+        )
+        # p_win = 0.50 -> expected return = 0.50 * 50 = $25.00
+        # standard tier ($15 fee): expected_net = $25 - $15 = +$10.00
+        res_standard = evaluate_dispute_recovery(evidence, merchant_tier="standard")
+        assert res_standard.expected_net_recovery == 10.00
+
+        # advanced tier ($30 fee): expected_net = $25 - $30 = -$5.00 -> auto write-off
+        res_advanced = evaluate_dispute_recovery(evidence, merchant_tier="advanced")
+        assert res_advanced.expected_net_recovery == -5.00
+        assert res_advanced.action == ACTION_AUTO_WRITE_OFF_UNECONOMIC
+        assert "$30.00" in res_advanced.reasoning
+
+        # enterprise tier ($0 fee): expected_net = $25 - $0 = +$25.00
+        res_enterprise = evaluate_dispute_recovery(evidence, merchant_tier="enterprise")
+        assert res_enterprise.expected_net_recovery == 25.00
+
+
 
 # ---------------------------------------------------------------------------
 # 3. SQLite Audit Store Tests
