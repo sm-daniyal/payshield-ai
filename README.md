@@ -172,9 +172,12 @@ A complete Postman collection is included at the root (`PayShield_AI.postman_col
 ## Limitations / prototype scope
 
 - **Synthetic data only.** The model was trained on a generator-controlled dataset to demonstrate the pipeline. No real payment data was used or claimed.
+- **Synthetic dataset variance.** The model was evaluated on a 2,000-transaction holdout set (30 fraud cases). While ROC-AUC is 0.986, the small positive class (n=30) means this metric is high-variance and intended only to validate the pipeline architecture, not to claim production ML performance.
 - **No live payment integration.** The system uses the PayPal Sandbox API. Every action is a recommendation label returned as data. The system cannot move actual money.
+- **Simulated L402 settlement.** The L402 flow mocks the PayPal Orders v2 capture by generating a `PP-L402-<uuid>` string locally. In production, this would call `PayPalClient.create_order()` and `capture_order()` against the live PayPal API.
 - **No authentication.** The API and dashboard have no login/access control.
 - **SQLite audit storage.** Appropriate for a prototype; not a production audit solution.
+- **SQLite scaling ceiling.** SQLite is used for the audit and idempotency stores to prove the logic is sound. It has a practical write ceiling of ~1,000-5,000 TPS. Production migration would move idempotency to Redis (`SET NX EX`) and the audit log to PostgreSQL or Kafka.
 - **Docker not end-to-end run-tested locally.** The `Dockerfile` and `docker-compose.yml` are provided and validated against CI base images, but development was done using local Uvicorn servers. If Docker fails on your machine, run the local setup command.
 - **Cold-start transactions.** Customers with no prior history are scored neutrally. Production systems would query a live customer database.
 

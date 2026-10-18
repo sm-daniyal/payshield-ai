@@ -85,12 +85,14 @@ class ModelRunner:
         )
 
         # 2. Calibrated LightGBM inference
+        import math
         import pandas as pd
         x_input = pd.DataFrame([fv.to_list()], columns=self.feature_names)
         prob_arr = self.model.predict_proba(x_input)[0]
-        # Calibrated probability of fraud (positive class = index 1)
-        risk_probability = float(prob_arr[1])
-        risk_probability = max(0.0, min(1.0, risk_probability))
+        prob = float(prob_arr[1])
+        if math.isnan(prob) or math.isinf(prob):
+            prob = 1.0  # Fail closed: treat bad math as high risk
+        risk_probability = max(0.0, min(1.0, prob))
         risk_score = round(risk_probability * 100.0, 2)
 
         # 3. Grounded SHAP explainability & additivity check

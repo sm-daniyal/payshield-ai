@@ -37,7 +37,6 @@ logger = logging.getLogger("payshield.webhooks")
 router = APIRouter(prefix="/api/v1/paypal", tags=["PayPal Webhooks"])
 
 DEMO_CUSTOMERS_FILE = Path(__file__).parent.parent / "data" / "demo_customers.json"
-_MEMORY_IDEMPOTENCY_CACHE: set[str] = set()
 
 
 def _enrich_from_demo_store(payer_email: str, buyer_country: str = "US") -> dict[str, Any]:
@@ -73,39 +72,25 @@ def _enrich_from_demo_store(payer_email: str, buyer_country: str = "US") -> dict
 
 
 def _check_and_record_idempotency(db_path: Path, transmission_id: str, event_type: str) -> bool:
-    """
-    Check if transmission_id has already been processed in SQLite.
-    Returns True if already processed (duplicate), False if new.
-    """
+    """Atomic idempotency check using INSERT OR IGNORE to eliminate TOCTOU race."""
     try:
-        with sqlite3.connect(db_path) as conn:
-            cursor = conn.cursor()
-            cursor.execute("""
+        with sqlite3.connect(db_path, timeout=5.0) as conn:
+            conn.execute("PRAGMA journal_mode=WAL")  # concurrent reads during write
+            conn.execute("""
                 CREATE TABLE IF NOT EXISTS webhook_idempotency (
                     transmission_id TEXT PRIMARY KEY,
                     event_type TEXT NOT NULL,
                     processed_at TEXT NOT NULL
                 )
             """)
-            cursor.execute(
-                "SELECT 1 FROM webhook_idempotency WHERE transmission_id = ?",
-                (transmission_id,),
-            )
-            if cursor.fetchone() is not None:
-                return True
-
-            cursor.execute(
-                "INSERT INTO webhook_idempotency (transmission_id, event_type, processed_at) VALUES (?, ?, ?)",
+            cursor = conn.execute(
+                "INSERT OR IGNORE INTO webhook_idempotency VALUES (?, ?, ?)",
                 (transmission_id, event_type, datetime.now(timezone.utc).isoformat()),
             )
-            conn.commit()
-            return False
+            return cursor.rowcount == 0  # 0 rows inserted = already existed = duplicate
     except Exception as exc:
-        logger.warning("SQLite idempotency check failed (%s); falling back to in-memory set", exc)
-        if transmission_id in _MEMORY_IDEMPOTENCY_CACHE:
-            return True
-        _MEMORY_IDEMPOTENCY_CACHE.add(transmission_id)
-        return False
+        logger.error("Idempotency check failed, rejecting to prevent duplicate processing: %s", exc)
+        raise HTTPException(status_code=503, detail="Idempotency store unavailable")
 
 
 async def _verify_paypal_signature(
@@ -128,6 +113,13 @@ async def _verify_paypal_signature(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Missing required PayPal webhook signature headers",
+        )
+
+    # Validate cert_url belongs to official PayPal domain (prevent SSRF/spoofing)
+    if not (cert_url.startswith("https://api.paypal.com") or cert_url.startswith("https://api.sandbox.paypal.com")):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid cert_url domain: must be hosted on paypal.com",
         )
 
     # Fail closed if webhook_id is unconfigured
