@@ -57,7 +57,7 @@ flowchart TD
     S --> M
 ```
 
-Three independently-auditable layers: the model estimates probability → a deterministic module converts it to a 0–100 risk score for legibility → a separate deterministic module decides the bounded action. Changing how risk is displayed can never silently change what action is taken.
+Three independently-auditable layers: the model estimates probability → a deterministic module converts it to a 0–100 risk score for legibility → a separate deterministic module decides the bounded action. Changing how risk is displayed can never silently change what action is taken. (See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)).
 
 ## ML pipeline
 
@@ -85,7 +85,7 @@ Selected operating threshold: **0.20** — chosen by minimising expected cost. I
 
 ## Decision engine
 
-A five-rule policy table converts a fraud probability (and transaction amount) into a bounded action recommendation. Rules fire in order; first match wins.
+A five-rule policy table converts a fraud probability (and transaction amount) into a bounded action recommendation. Rules fire in order; first match wins. (See [docs/DECISION_ENGINE.md](docs/DECISION_ENGINE.md)).
 
 | Rule | Condition | Action |
 | :--- | :--- | :--- |
@@ -94,13 +94,13 @@ A five-rule policy table converts a fraud probability (and transaction amount) i
 | MEDIUM_MONITOR | probability ≥ 0.20 | ALLOW_WITH_MONITORING |
 | LOW_ALLOW | (catch-all) | ALLOW |
 
-SHAP explanations cannot influence the action — `evaluate_policy()` accepts only `(probability, amount)`, enforced by function signature and verified by dedicated tests in `test_decision_engine.py`.
+SHAP explanations cannot influence the action — `evaluate_policy()` accepts only `(probability, amount)`, enforced by function signature and verified by dedicated tests in `test_decision_engine.py`. (See [docs/EXPLAINABILITY.md](docs/EXPLAINABILITY.md)).
 
 ## Payments Security
 
-- **Webhook Verification:** Every inbound PayPal webhook is verified via `/v1/notifications/verify-webhook-signature` before state mutation. Fails closed on timeout. (See `test_webhooks.py`).
+- **Webhook Verification:** Every inbound PayPal webhook is verified via `/v1/notifications/verify-webhook-signature` before state mutation. Fails closed on timeout. (See `test_webhooks.py` and [docs/PAYPAL_INTEGRATION.md](docs/PAYPAL_INTEGRATION.md)).
 - **Idempotency:** Every outbound PayPal POST (Orders v2 / Disputes v1) includes a `PayPal-Request-Id` header to prevent double-charging.
-- **Audit Vault:** An append-only SQLite log chained via SHA-256 (`hash = SHA256(prev_hash + record)`).
+- **Audit Vault:** An append-only SQLite log chained via SHA-256 (`hash = SHA256(prev_hash + record)`). (See [docs/PAYMENT_SECURITY.md](docs/PAYMENT_SECURITY.md)).
 
 ## Frontend / dashboard
 
@@ -118,7 +118,7 @@ payshield-ai/
 │   ├── ml/         # Training scripts, evaluation JSON, and matplotlib charts
 │   └── tests/      # pytest suite: ML, API, Webhook security, L402
 ├── frontend/       # React 19 + Vite + Tailwind dashboard
-├── docs/           # Technical documentation (see docs/README.md for index)
+├── docs/           # Technical documentation (see [docs/README.md](docs/README.md) for index)
 ├── screenshots/    # UI screenshots
 ├── Dockerfile      # Multi-stage build
 ├── docker-compose.yml # docker compose up --build
@@ -156,14 +156,18 @@ npm run dev
 # Open http://localhost:5173
 ```
 
-## Testing
+## Testing & API Verification
+
+We prioritize verification over claims. Our pytest suite covers webhook fail-closed behavior, ML additivity invariants, decision engine boundaries, and audit persistence.
 
 ```bash
 cd backend
 pytest tests/ -q
+# 100+ tests passing, covering test_webhooks.py, test_ml_and_policy.py, test_feature_pipeline.py, and test_paypal_and_disputes.py.
 ```
 
-Current test count: 100+ non-integration tests passing. The suite covers webhook fail-closed behavior, ML additivity invariants, decision engine boundaries, and audit persistence.
+### Manual API Testing (Postman)
+A complete Postman collection is included at the root (`PayShield_AI.postman_collection.json`). It contains pre-configured requests for the Trust Verdict (`/api/v1/evaluate`) and the L402 Paywall flow. See `docs/POSTMAN.md` for usage instructions.
 
 ## Limitations / prototype scope
 
@@ -171,3 +175,6 @@ Current test count: 100+ non-integration tests passing. The suite covers webhook
 - **No live payment integration.** The system uses the PayPal Sandbox API. Every action is a recommendation label returned as data. The system cannot move actual money.
 - **No authentication.** The API and dashboard have no login/access control.
 - **SQLite audit storage.** Appropriate for a prototype; not a production audit solution.
+- **Docker not end-to-end run-tested locally.** The `Dockerfile` and `docker-compose.yml` are provided and validated against CI base images, but development was done using local Uvicorn servers. If Docker fails on your machine, run the local setup command.
+- **Cold-start transactions.** Customers with no prior history are scored neutrally. Production systems would query a live customer database.
+

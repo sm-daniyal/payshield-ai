@@ -49,3 +49,6 @@ frontend/.vite/
 # OS
 .DS_Store
 Thumbs.db
+
+# Local / Personal docs
+PROJECT_BLUEPRINT.md
