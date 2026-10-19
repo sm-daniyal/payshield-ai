@@ -125,7 +125,10 @@ The agent transmits a POST request to `/api/v1/l402/payment-request`. PayShield 
 
 ### Step 3: Cryptographic Token Generation
 Upon confirmed payment capture, PayShield AI mints a signed HMAC-SHA256 bearer token valid for 30 minutes:
-$$\text{token} = \text{l402\_} \parallel \text{Hex}(\text{HMAC-SHA256}(K_{\text{server}}, \text{context\_token} \parallel \text{expiry}))$$
+
+```math
+\text{token} = \mathtt{"l402\_"} \parallel \operatorname{Hex}(\operatorname{HMAC-SHA256}(K_{\text{server}}, \mathtt{context\_token} \parallel \text{expiry}))
+```
 
 ### Step 4: Unlocked Access (`HTTP 200 OK`)
 The agent includes `Authorization: Bearer <l402_token>` on subsequent requests. PayShield AI validates the HMAC signature in constant time and returns structured telemetry.
@@ -137,7 +140,10 @@ The agent includes `Authorization: Bearer <l402_token>` on subsequent requests. 
 PayPal assesses a non-refundable **$15.00 USD dispute fee** on every contested chargeback. Contesting an unrecoverable dispute results in compounding losses: the lost transaction value plus the $15.00 penalty.
 
 ### Expected Net Recovery Equation
-$$\text{Expected Net Recovery} = (P_{\text{win}} \cdot \text{Dispute Amount}) - \$15.00$$
+
+```math
+\text{Expected Net Recovery} = (P_{\text{win}} \cdot \text{Dispute Amount}) - \$15.00
+```
 
 Where $P_{\text{win}} \in [0.0, 1.0]$ is estimated from historical claim types, carrier delivery validation, and AVS/CVV matching.
 

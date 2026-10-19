@@ -113,11 +113,18 @@ Rules are evaluated sequentially; the first matching condition determines the bo
 The decision engine guarantees three formal invariants:
 
 1. **Completeness:**
-   $$\forall (P, A) \in [0.0, 1.0] \times [0.0, \infty), \quad \exists ! \text{ rule } R_k \text{ such that } R_k(P, A) = \text{True}$$
+
+   ```math
+   \forall (P, A) \in [0.0, 1.0] \times [0.0, \infty), \quad \exists ! \text{ rule } R_k \text{ such that } R_k(P, A) = \text{True}
+   ```
+
    The catch-all `LOW_ALLOW` rule guarantees that undefined states are mathematically impossible.
 
 2. **Bounded Output Co-domain:**
-   $$\text{evaluate\_policy}(P, A) \in \{\text{ALLOW}, \text{ALLOW\_WITH\_MONITORING}, \text{STEP\_UP\_VERIFICATION}, \text{BLOCK\_AND\_FLAG\_DISPUTE}\}$$
+
+   ```math
+   \operatorname{evaluate\_policy}(P, A) \in \{\mathtt{ALLOW}, \mathtt{ALLOW\_WITH\_MONITORING}, \mathtt{STEP\_UP\_VERIFICATION}, \mathtt{BLOCK\_AND\_FLAG\_DISPUTE}\}
+   ```
 
 3. **Immutability Under Non-Numerical Inputs:**
    The policy engine contains zero reflection, dynamic code execution, or prompt templates. It is structurally immune to LLM jailbreaks, prompt injections, or adversarial token sequences.

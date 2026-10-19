@@ -150,7 +150,7 @@ Every feature is derived strictly from historical data available prior to transa
 | `velocity_24h` | $\sum \mathbb{I}(t_{\text{prev}} \ge t_{\text{now}} - 86400)$ | Detects multi-hour automated liquidation campaigns. |
 | `velocity_7d` | $\sum \mathbb{I}(t_{\text{prev}} \ge t_{\text{now}} - 604800)$ | Measures weekly baseline acceleration. |
 | `fx_spread` | $\frac{\lvert R_{\text{actual}} - R_{\text{benchmark}} \rvert}{R_{\text{benchmark}}}$ | Identifies cross-border currency conversion rate arbitrage. |
-| `geo_mismatch` | $\mathbb{I}(\text{shipping\_country} \neq \text{ip\_country})$ | Detects proxy routing and cross-border redirection fraud. |
+| `geo_mismatch` | $\mathbb{I}(\text{country}_{\text{shipping}} \neq \text{country}_{\text{ip}})$ | Detects proxy routing and cross-border redirection fraud. |
 | `account_risk_score` | $f(\text{age}, \text{verified}, \text{disputes}) \in [0, 1]$ | Structural account maturity and historical dispute penalty. |
 
 ---
@@ -170,7 +170,11 @@ When autonomous AI bots, crawlers, or market-intelligence subagents query PayShi
    The bot agent sends a POST request to `/api/v1/l402/payment-request`. The gateway calls PayPal Orders v2 `CAPTURE` intent for `$0.05 USD`.
 3. **Cryptographic HMAC Bearer Token:**
    Upon confirmed PayPal capture, the gateway mints an HMAC-SHA256 token:
-   $$\text{token} = \text{HMAC-SHA256}(K_{\text{secret}}, \text{context\_token} \parallel \text{expiry})$$
+
+```math
+\text{token} = \operatorname{HMAC-SHA256}(K_{\text{secret}}, \mathtt{context\_token} \parallel \text{expiry})
+```
+
 4. **Feed Unlock (HTTP 200 OK):**
    The bot presents `Authorization: Bearer <token>` on subsequent requests. The gateway verifies the HMAC signature and serves premium structured telemetry without human intervention.
 
@@ -180,7 +184,9 @@ When autonomous AI bots, crawlers, or market-intelligence subagents query PayShi
 
 PayPal charges a non-refundable **$15.00 dispute fee** on contested claims. The Expected Value (EV) engine determines whether to defend or write off:
 
-$$\text{Expected Net Recovery} = (P_{\text{win}} \times \text{Dispute Amount}) - \$15.00$$
+```math
+\text{Expected Net Recovery} = (P_{\text{win}} \times \text{Dispute Amount}) - \$15.00
+```
 
 - **Case 1 ($EV \le 0$):** Auto write-off (`AUTO_WRITE_OFF_UNECONOMIC`). The merchant concedes immediately, avoiding the $15.00 penalty and saving administrative overhead.
 - **Case 2 ($EV > 0$ and $P_{\text{win}} \ge 0.60$):** Autonomous defense (`PROCEED_DIRECT_DISPUTE`). The engine compiles a structured evidence dossier (carrier tracking scans, GPS delivery confirmations, AVS/CVV matching) and transmits it via PayPal Disputes v1 `POST /v1/customer/disputes/{id}/provide-evidence`.
@@ -191,6 +197,8 @@ $$\text{Expected Net Recovery} = (P_{\text{win}} \times \text{Dispute Amount}) -
 
 Every decision across all three stages is committed to an append-only SQLite log with cryptographic SHA-256 hash chaining:
 
-$$\text{Hash}_n = \text{SHA-256}(\text{Hash}_{n-1} \parallel \text{TransactionID} \parallel \text{Timestamp} \parallel P_{\text{fraud}} \parallel \text{Action} \parallel \Delta_{\text{additivity}})$$
+```math
+\text{Hash}_n = \operatorname{SHA-256}(\text{Hash}_{n-1} \parallel \text{TransactionID} \parallel \text{Timestamp} \parallel P_{\text{fraud}} \parallel \text{Action} \parallel \Delta_{\text{additivity}})
+```
 
 This provides mathematical proof of non-tampering for financial compliance and banking partner review.
