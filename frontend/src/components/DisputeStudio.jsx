@@ -93,7 +93,7 @@ export default function DisputeStudio({
                     </td>
                     <td className="py-3.5 px-4 text-right font-sans">
                       <div className="flex items-center justify-end gap-2">
-                        {d.action === 'PROCEED_DIRECT_DISPUTE' && d.status !== 'SUBMITTED_TO_PAYPAL' ? (
+                        {d.action === 'PROCEED_DIRECT_DISPUTE' && d.status !== 'SUBMITTED_TO_PAYPAL' && d.status !== 'SIMULATED_SUCCESS' ? (
                           <button
                             onClick={() => onDisputeSubmit(d)}
                             className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-3 py-1.5 rounded transition inline-flex items-center gap-1.5 text-xs shadow-sm"
@@ -101,6 +101,11 @@ export default function DisputeStudio({
                             <Send className="w-3 h-3" />
                             Submit
                           </button>
+                        ) : d.status === 'SIMULATED_SUCCESS' ? (
+                          <span className="text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded font-medium inline-flex items-center gap-1 text-xs">
+                            <CheckCircle2 className="w-3 h-3 text-amber-600" />
+                            Transmitted (Sandbox Simulated)
+                          </span>
                         ) : d.status === 'SUBMITTED_TO_PAYPAL' ? (
                           <span className="text-emerald-700 font-medium inline-flex items-center gap-1 text-xs">
                             <CheckCircle2 className="w-3 h-3" />

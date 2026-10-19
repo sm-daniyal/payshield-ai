@@ -367,6 +367,16 @@ pytest tests/ -q
 
 ---
 
+## Prior Art & Acknowledgements
+
+We stand on the shoulders of giants. PayShield AI was inspired by, and builds upon, the following open standards and industry pioneers:
+
+- **L402 Protocol:** Originally developed by Lightning Labs for Bitcoin micropayments, we adapted the HTTP 402 challenge-response flow to work with **PayPal Orders v2** for fiat agentic commerce.
+- **TollBit:** The startup that pioneered the concept of monetizing AI web crawlers instead of blocking them. We extended this concept by wrapping it in a pre-transaction ML risk engine (LightGBM + SHAP) to distinguish malicious bots from legitimate AI agents before the paywall.
+- **PayPal Developer Platform:** For the robust Orders v2, Disputes v1, and Webhook Verification APIs that make this prototype possible.
+
+---
+
 ## Built With
 
 - **Backend:** Python 3.12, FastAPI, LightGBM, SHAP, Pydantic v2, SQLite, httpx

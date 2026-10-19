@@ -157,6 +157,8 @@ Every feature is derived strictly from historical data available prior to transa
 
 ## 5. Stage 2: L402 Autonomous Machine-to-Machine Paywall
 
+*Note: The L402 protocol was originally created by Lightning Labs for the Bitcoin Lightning Network. Our implementation adapts this HTTP 402 standard for fiat micro-settlements using the PayPal Orders v2 API.*
+
 When autonomous AI bots, crawlers, or market-intelligence subagents query PayShield's protected feeds without authentication, the gateway executes the **RFC 402 / L402 protocol**:
 
 1. **HTTP 402 Payment Required:**

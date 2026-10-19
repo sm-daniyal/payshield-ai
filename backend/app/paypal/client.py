@@ -95,12 +95,13 @@ class PayPalClient:
 
     async def create_order(
         self,
-        amount: float,
+        amount: float | str,
         currency: str = "USD",
         custom_id: str | None = None,
         paypal_request_id: str | None = None,
     ) -> dict[str, Any]:
         """Create an order via PayPal Orders v2 API."""
+        amount = float(amount)
         if not self.is_configured:
             return {
                 "id": f"ORD-MOCK-{uuid.uuid4().hex[:6].upper()}",

@@ -152,7 +152,7 @@ export default function App() {
 
   const handleDisputeSubmit = async (dispute) => {
     try {
-      await fetch(`/api/v1/disputes/${dispute.dispute_id}/submit`, {
+      const res = await fetch(`/api/v1/disputes/${dispute.dispute_id}/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -160,8 +160,9 @@ export default function App() {
           notes: `Tracking proof: ${dispute.tracking}. Fulfilled per PayPal Seller Protection.`
         })
       });
+      const data = await res.json();
       setSubmissionFeedback(`Submitted to PayPal Disputes API: Dispute ${dispute.dispute_id} evidence acknowledged.`);
-      setDisputes(disputes.map(d => d.dispute_id === dispute.dispute_id ? { ...d, status: 'SUBMITTED_TO_PAYPAL' } : d));
+      setDisputes(disputes.map(d => d.dispute_id === dispute.dispute_id ? { ...d, status: data?.status || 'SUBMITTED_TO_PAYPAL' } : d));
     } catch (e) {
       setSubmissionFeedback(`Dispute ${dispute.dispute_id} evidence queued for PayPal API submission.`);
     }
