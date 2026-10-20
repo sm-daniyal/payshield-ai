@@ -172,7 +172,7 @@ When autonomous AI bots, crawlers, or market-intelligence subagents query PayShi
    Upon confirmed PayPal capture, the gateway mints an HMAC-SHA256 token:
 
 ```math
-\text{token} = \operatorname{HMAC-SHA256}(K_{\text{secret}}, \mathtt{context\_token} \parallel \text{expiry})
+\text{token} = \text{HMAC-SHA256}(K_{\text{secret}}, \text{context} \parallel \text{expiry})
 ```
 
 4. **Feed Unlock (HTTP 200 OK):**
@@ -198,7 +198,7 @@ PayPal charges a non-refundable **$15.00 dispute fee** on contested claims. The 
 Every decision across all three stages is committed to an append-only SQLite log with cryptographic SHA-256 hash chaining:
 
 ```math
-\text{Hash}_n = \operatorname{SHA-256}(\text{Hash}_{n-1} \parallel \text{TransactionID} \parallel \text{Timestamp} \parallel P_{\text{fraud}} \parallel \text{Action} \parallel \Delta_{\text{additivity}})
+\text{Hash}_n = \text{SHA-256}(\text{Hash}_{n-1} \parallel \text{TransactionID} \parallel \text{Timestamp} \parallel P_{\text{fraud}} \parallel \text{Action} \parallel \Delta_{\text{additivity}})
 ```
 
 This provides mathematical proof of non-tampering for financial compliance and banking partner review.

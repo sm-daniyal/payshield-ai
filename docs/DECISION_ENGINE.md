@@ -123,7 +123,7 @@ The decision engine guarantees three formal invariants:
 2. **Bounded Output Co-domain:**
 
    ```math
-   \operatorname{evaluate\_policy}(P, A) \in \{\mathtt{ALLOW}, \mathtt{ALLOW\_WITH\_MONITORING}, \mathtt{STEP\_UP\_VERIFICATION}, \mathtt{BLOCK\_AND\_FLAG\_DISPUTE}\}
+   \text{Decision}(P, A) \in \{\text{ALLOW}, \text{ALLOW-WITH-MONITORING}, \text{STEP-UP-VERIFICATION}, \text{BLOCK-AND-FLAG-DISPUTE}\}
    ```
 
 3. **Immutability Under Non-Numerical Inputs:**

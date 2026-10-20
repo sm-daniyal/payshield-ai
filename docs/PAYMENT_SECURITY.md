@@ -112,16 +112,16 @@ PayShield AI implements **cryptographic hash chaining** within its SQLite audit 
 Let $R_n$ be the $n$-th audit record comprising:
 
 ```math
-R_n = (\mathtt{tx\_id}_n, \text{timestamp}_n, \text{amount}_n, P_{\text{fraud}, n}, \text{action}_n, \Delta_{\text{additivity}, n})
+R_n = (\text{tx}_{n}, \text{timestamp}_n, \text{amount}_n, P_{\text{fraud}, n}, \text{action}_n, \Delta_{\text{additivity}, n})
 ```
 
 The cryptographic digest $H_n$ for record $n$ is defined recursively:
 
 ```math
-H_0 = \operatorname{SHA-256}(\mathtt{"PAYSHIELD\_GENESIS\_BLOCK\_2026"})
+H_0 = \text{SHA-256}(\text{"PAYSHIELD-GENESIS-BLOCK-2026"})
 ```
 ```math
-H_n = \operatorname{SHA-256}(H_{n-1} \parallel \operatorname{CanonicalJSON}(R_n))
+H_n = \text{SHA-256}(H_{n-1} \parallel \text{CanonicalJSON}(R_n))
 ```
 
 Where $\parallel$ denotes byte-level string concatenation and $\text{CanonicalJSON}$ guarantees deterministic key serialization without whitespace discrepancies.
@@ -154,10 +154,10 @@ The L402 gateway monetizes autonomous AI crawlers through cryptographic HMAC-SHA
    Tokens are minted using a server-side secret key $K_{\text{secret}}$:
 
 ```math
-\text{Signature} = \operatorname{HMAC-SHA256}(K_{\text{secret}}, \mathtt{payment\_context\_token} \parallel \mathtt{expiry\_timestamp})
+\text{Signature} = \text{HMAC-SHA256}(K_{\text{secret}}, \text{payment-context} \parallel \text{expiry-timestamp})
 ```
 ```math
-\text{Bearer Token} = \mathtt{"l402\_"} \parallel \operatorname{Hex}(\text{Signature})
+\text{Bearer Token} = \text{l402} \parallel \text{Hex}(\text{Signature})
 ```
 
 2. **Constant-Time Verification:**
