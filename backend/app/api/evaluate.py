@@ -9,6 +9,7 @@ SHA-256 record to the append-only audit store.
 """
 from __future__ import annotations
 
+import asyncio
 import logging
 from fastapi import APIRouter, HTTPException, status
 from app.db.audit_store import AuditStore
@@ -33,7 +34,9 @@ async def evaluate_transaction(
 ) -> TransactionEvaluationResponse:
     try:
         runner = ModelRunner.get_instance()
-        response = runner.evaluate(request)
+        # Offload CPU-bound LightGBM inference and SHAP explainability to a worker thread
+        # to guarantee the async event loop remains non-blocking under high-concurrency requests
+        response = await asyncio.to_thread(runner.evaluate, request)
     except Exception as exc:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
