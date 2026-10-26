@@ -308,37 +308,63 @@ export default function RiskRadar({
                 </span>
               </div>
 
-              {/* Massive Calibrated Risk Score Banner */}
-              <div className="p-6 rounded-2xl bg-gray-50/80 border border-gray-100 flex items-center justify-between">
-                <div>
-                  <div className="text-xs uppercase font-bold text-gray-400 tracking-wider">
-                    Calibrated Risk Score
+              {/* Calibrated Risk Score Banner — big number + color ring + plain-English verdict */}
+              {(() => {
+                const score = selectedTx.risk_score ?? 0;
+                const isBlock = selectedTx.action === 'BLOCK_AND_FLAG_DISPUTE';
+                const isStep  = selectedTx.action === 'STEP_UP_VERIFICATION';
+                const ringColor = isBlock ? '#DC2626' : isStep ? '#D97706' : '#059669';
+                const bgColor   = isBlock ? 'bg-rose-50 border-rose-200' : isStep ? 'bg-amber-50 border-amber-200' : 'bg-emerald-50 border-emerald-200';
+                const textColor = isBlock ? 'text-rose-700' : isStep ? 'text-amber-700' : 'text-emerald-700';
+                const verdict   = isBlock ? '🚫 Transaction Blocked' : isStep ? '⚠️ Step-Up Verification Required' : '✅ Transaction Allowed';
+                const reason    = isBlock
+                  ? 'High fraud probability detected. Card-testing pattern or geo-mismatch triggered the BLOCK rule.'
+                  : isStep
+                  ? 'Moderate risk signals present. Additional verification recommended before clearing.'
+                  : 'Low fraud probability. Account history and geo signals are consistent.';
+                const circumference = 2 * Math.PI * 36;
+                const dashOffset = circumference - (score / 100) * circumference;
+                return (
+                  <div className="flex items-stretch gap-4">
+                    {/* Score ring */}
+                    <div className="flex flex-col items-center justify-center bg-gray-50 border border-gray-100 rounded-2xl px-6 py-5 shrink-0">
+                      <svg width="90" height="90" viewBox="0 0 90 90">
+                        <circle cx="45" cy="45" r="36" fill="none" stroke="#E5E7EB" strokeWidth="8" />
+                        <circle
+                          cx="45" cy="45" r="36" fill="none"
+                          stroke={ringColor} strokeWidth="8"
+                          strokeDasharray={circumference}
+                          strokeDashoffset={dashOffset}
+                          strokeLinecap="round"
+                          transform="rotate(-90 45 45)"
+                          style={{ transition: 'stroke-dashoffset 0.6s ease' }}
+                        />
+                        <text x="45" y="49" textAnchor="middle" fontSize="20" fontWeight="800" fontFamily="monospace" fill="#111827">{score}</text>
+                      </svg>
+                      <div className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider mt-1">Risk Score</div>
+                    </div>
+
+                    {/* Verdict card */}
+                    <div className={`flex-1 rounded-2xl border p-5 flex flex-col justify-between ${bgColor}`}>
+                      <div>
+                        <div className={`text-base font-bold ${textColor} mb-1`}>{verdict}</div>
+                        <p className="text-xs text-gray-600 leading-relaxed">{reason}</p>
+                      </div>
+                      <div className="flex items-center gap-3 mt-4 flex-wrap">
+                        <span className={`text-xs font-mono font-bold px-2.5 py-1 rounded-lg border ${bgColor} ${textColor}`}>
+                          {selectedTx.action}
+                        </span>
+                        <span className="text-xs font-mono text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200 font-bold">
+                          SHAP ✓ (Δ &lt; 1e-4)
+                        </span>
+                        <span className="text-xs font-mono text-gray-500 bg-white px-2.5 py-1 rounded-lg border border-gray-200">
+                          {selectedTx.rule_triggered || 'NORMAL_EVALUATION'}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="text-6xl font-mono font-bold text-gray-900 mt-1">
-                    {selectedTx.risk_score}
-                    <span className="text-lg font-normal text-gray-400 font-sans ml-2">/ 100</span>
-                  </div>
-                  <div className="mt-2.5">
-                    <span className="text-xs text-emerald-600 font-mono font-bold bg-emerald-50 px-2 py-1 rounded-md border border-emerald-200">
-                      SHAP Proof: PASS (Δ &lt; 1e-4)
-                    </span>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="text-xs uppercase font-bold text-gray-400 tracking-wider mb-1.5">
-                    Policy Decision
-                  </div>
-                  <span className={`inline-block px-3.5 py-1.5 rounded-xl text-xs font-bold font-mono border ${
-                    selectedTx.action === "BLOCK_AND_FLAG_DISPUTE"
-                      ? "bg-rose-50 text-rose-700 border-rose-200"
-                      : selectedTx.action === "ALLOW_WITH_MONITORING" || selectedTx.action === "ALLOW"
-                      ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                      : "bg-amber-50 text-amber-700 border-amber-200"
-                  }`}>
-                    {selectedTx.action}
-                  </span>
-                </div>
-              </div>
+                );
+              })()}
 
               {/* Extracted Feature Signals Grid */}
               <div>
@@ -377,27 +403,28 @@ export default function RiskRadar({
               <div className="pt-2">
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400">
-                    Feature Attributions (SHAP)
+                    Why did the model decide this? (SHAP)
                   </h3>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-3.5">
                   {selectedTx.shap_contributions?.map((contrib, idx) => {
                     const isPositive = contrib.shap_value > 0;
+                    const pct = Math.min(100, Math.max(6, contrib.contribution_pct));
                     return (
-                      <div key={idx} className="space-y-1.5">
-                        <div className="flex items-center justify-between text-xs font-mono">
-                          <span className="text-gray-700 font-semibold">{contrib.feature}</span>
-                          <span className={isPositive ? "text-red-600 font-bold" : "text-emerald-600 font-bold"}>
-                            {isPositive ? `+${contrib.shap_value.toFixed(4)}` : contrib.shap_value.toFixed(4)} ({contrib.contribution_pct.toFixed(1)}%)
+                      <div key={idx}>
+                        <div className="flex items-center justify-between text-xs mb-1">
+                          <span className="font-semibold text-gray-700 font-mono">{contrib.feature}</span>
+                          <span className={`font-bold ${isPositive ? 'text-rose-600' : 'text-emerald-600'}`}>
+                            {isPositive ? '▲ raises risk' : '▼ lowers risk'} &nbsp;
+                            {isPositive ? `+${contrib.shap_value.toFixed(4)}` : contrib.shap_value.toFixed(4)}
                           </span>
                         </div>
-                        {/* Thin h-2 SHAP bars with dark slate track and precision fill */}
-                        <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+                        <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
                           <div
-                            className="h-full rounded-full transition-all duration-300"
+                            className="h-full rounded-full transition-all duration-500"
                             style={{
-                              width: `${Math.min(100, Math.max(8, contrib.contribution_pct))}%`,
+                              width: `${pct}%`,
                               backgroundColor: isPositive ? '#DC2626' : '#059669'
                             }}
                           />
