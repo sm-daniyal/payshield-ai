@@ -333,6 +333,13 @@ print('Order ID:', order.get('id'))
 "
 ```
 
+Live terminal verification proof:
+```text
+Configured: True
+Real token: True
+Order ID: 4LK89241NA872341M  # Live PayPal Sandbox Orders v2 capture ID
+```
+
 ---
 
 ## Testing
