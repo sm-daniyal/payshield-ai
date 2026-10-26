@@ -4,10 +4,28 @@ PayShield AI — FastAPI Application Entry Point
 Registers all routers and exposes the application health check.
 The /evaluate endpoint (Phase 2) will be wired in here once the ML model is ready.
 """
+from contextlib import asynccontextmanager
+import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
+from app.engine.model_runner import ModelRunner
+
+logger = logging.getLogger("payshield.main")
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Lifespan handler: Pre-warm ModelRunner on startup to prevent cold-start latency."""
+    logger.info("Pre-warming LightGBM model runner and SHAP explainer...")
+    try:
+        runner = ModelRunner.get_instance()
+        logger.info("ModelRunner pre-warmed successfully (%d features loaded)", len(runner.feature_names))
+    except Exception as exc:
+        logger.error("Failed to pre-warm ModelRunner on startup: %s", exc)
+    yield
+
 
 app = FastAPI(
     title="PayShield AI",
@@ -18,6 +36,7 @@ app = FastAPI(
     version="0.1.0",
     docs_url="/api/docs",
     redoc_url="/api/redoc",
+    lifespan=lifespan,
 )
 
 app.add_middleware(
