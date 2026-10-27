@@ -11,6 +11,7 @@ This directory contains technical documentation for PayShield AI. For the projec
 | [EXPLAINABILITY.md](EXPLAINABILITY.md) | SHAP TreeExplainer math, additivity invariant (Δ < 1e-4), and human-readable grounds. |
 | [PAYPAL_INTEGRATION.md](PAYPAL_INTEGRATION.md) | Orders v2, Disputes v1, webhook signature verification, and idempotency. |
 | [PAYMENT_SECURITY.md](PAYMENT_SECURITY.md) | Webhook verification, idempotency keys, and append-only SHA-256 audit chaining. |
+| [DEMO_GUIDE.md](DEMO_GUIDE.md) | Complete 3-minute video presentation script, timing cues, and click walkthrough. |
 
 ## Reading order for code reviewers
 
