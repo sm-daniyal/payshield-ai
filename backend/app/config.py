@@ -19,6 +19,15 @@ class Settings(BaseSettings):
     paypal_base_url: str = "https://api-m.sandbox.paypal.com"
     paypal_webhook_id: str = ""
 
+    # Razorpay (Test Mode by default — use test_* key prefix)
+    razorpay_key_id: str = ""
+    razorpay_key_secret: str = ""
+    razorpay_webhook_secret: str = ""
+
+    # Payment Provider Selector — switches the L402 settlement rail
+    # Accepted values: "paypal" | "razorpay"
+    payment_provider: str = "paypal"
+
     # Application
     app_env: str = "development"
     log_level: str = "INFO"
