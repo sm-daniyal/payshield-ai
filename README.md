@@ -2,7 +2,7 @@
 
 > **The Autonomous Trust & Monetization Layer for Agentic Commerce on PayPal.**
 
-PayShield AI is a three-module fraud defense and revenue recovery platform built natively on PayPal's REST APIs. It scores every inbound transaction with a mathematically auditable LightGBM model, gates bot traffic behind an HTTP 402 machine-payment tollgate settled via PayPal Orders v2, and autonomously recovers disputed revenue through a tier-aware expected-value engine — all without a human in the loop.
+**PayShield AI turns three silent PayPal revenue leaks into automated wins:** it blocks card-testing bots before payment clearing using a calibrated LightGBM model, charges legitimate AI crawlers $0.05 per API call via the HTTP 402 machine-payment protocol settled on PayPal Orders v2, and autonomously decides when to fight—or concede—a disputed charge based on whether the expected payout exceeds PayPal's mandatory $15 dispute filing fee. Every decision is cryptographically sealed in an append-only SHA-256 audit ledger with no human in the loop.
 
 [![CI Pipeline](https://github.com/sm-daniyal/payshield-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/sm-daniyal/payshield-ai/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
