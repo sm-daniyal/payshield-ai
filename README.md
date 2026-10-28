@@ -39,7 +39,7 @@ PayShield solves all three in a single causal pipeline: score the transaction �
 Every transaction is scored by a LightGBM model calibrated via Platt scaling. The model computes 7 leakage-safe features from the request payload, returns a 0–100 risk score, and generates SHAP feature attributions with a mathematical additivity proof. A deterministic 5-rule policy engine converts the probability to a bounded action (`ALLOW`, `ALLOW_WITH_MONITORING`, `STEP_UP_VERIFICATION`, `BLOCK_AND_FLAG_DISPUTE`). The policy engine is intentionally separated from the model — changing the display layer cannot silently change the enforcement decision.
 
 ### Module 2 — L402 Tollgate (Agentic Commerce)
-When an autonomous agent hits the threat intelligence feed without a valid bearer token, the server returns `HTTP 402 Payment Required` with a machine-readable PayPal order offer. The agent autonomously calls PayPal's Orders v2 API, settles \$0.05, and receives an HMAC-signed bearer token granting access. No human authorization is required. This is the L402 machine-payment protocol running on real PayPal Sandbox infrastructure.
+When an autonomous agent hits the threat intelligence feed without a valid bearer token, the server returns `HTTP 402 Payment Required` with a machine-readable payment offer. The agent autonomously settles \$0.05 on connected payment rails (supporting native **PayPal Orders v2** with a modular adapter for **Razorpay Orders API** via `PAYMENT_PROVIDER=paypal|razorpay`), receiving an HMAC-signed bearer token granting access. No human authorization is required. This is the L402 machine-payment protocol running on real fintech infrastructure.
 
 ### Module 3 — Dispute Studio (Autonomous Recovery)
 When a dispute webhook arrives, the EV engine computes `(P_win × dispute_amount) − filing_fee`, where `filing_fee` is looked up from a merchant-tier table (`standard: $15`, `advanced: $30`, `enterprise: $0`). Disputes with positive expected net recovery are automatically compiled into a structured evidence dossier and submitted to PayPal's Disputes v1 API. Negative EV disputes are auto-written off, protecting merchant cash flow from fee traps.
@@ -208,16 +208,30 @@ A complete Postman collection is included at the root: `PayShield_AI.postman_col
 
 ## Frontend / Dashboard
 
-A React 19 + Vite + Tailwind CSS dashboard with four interactive portals:
+A React 19 + Vite + Tailwind CSS dashboard engineered with high-density fintech telemetry:
+
+### 1. Risk Radar (Pre-Transaction Trust Scoring)
+Inject synthetic transactions using quick presets (Legit / Carding / FX Manipulation) or custom parameters. View the circular SVG calibrated score ring, plain-English policy verdict, SHAP attributions with feature-level directional tags (`▲ raises risk` / `▼ lowers risk`), and the real-time session ROI summary bar (`$312 in dispute fees saved · 14 fraud attempts blocked · 3 AI bots monetized`).
 
 ![Risk Radar](screenshots/risk_radar.png)
 
-- **Risk Radar** — Inject synthetic transactions using quick presets (Legit / Carding / FX Manipulation) or custom parameters. View the calibrated risk score, SHAP waterfall with additivity proof badge, extracted feature signals, and policy decision in real time.
-- **L402 Tollgate** — Animate the full HTTP 402 → \$0.05 settlement → HTTP 200 flow step by step in an interactive terminal. Click "View Unlocked Premium Intelligence" to reveal the full threat intelligence payload in a modal editorial grid.
-- **Dispute Studio** — Browse the autonomous dispute recovery queue. Each dispute card shows EV calculation, win probability, evidence status, and a PayPal submission button.
-- **Audit Vault** — Browse the append-only SHA-256 chained transaction and dispute ledger. Export as JSON for offline analysis.
+### 2. L402 Tollgate (Agentic Commerce & Dual-Rail Settlement)
+Interactive terminal animating the complete HTTP 402 challenge → micro-settlement → HTTP 200 unlock flow. Features a live **Provider Toggle** supporting both **PayPal Orders v2** and **Razorpay Orders API** via `PAYMENT_PROVIDER=paypal|razorpay`.
 
 ![L402 Tollgate](screenshots/l402_terminal.png)
+
+Upon successful capture, the agent receives an HMAC-SHA256 signed bearer token, unlocking decrypted zero-day intelligence bulletins:
+
+![L402 Intelligence Bulletins](screenshots/l402_intel_modal.png)
+
+### 3. Programmatic Settlement & Capture Proof
+Headless machine-to-machine agents programmatically invoke `/api/v1/l402/payment-request` to execute instant Order Captures on real Sandbox rails:
+
+![PayPal Capture Receipt](screenshots/paypal_capture_receipt.png)
+
+### 4. Dispute Studio & Audit Vault
+- **Dispute Studio** — Browse incoming claims evaluated by the expected-value (EV) recovery engine, automatically balancing claim amounts against PayPal's $15 non-refundable dispute fee.
+- **Audit Vault** — Tamper-evident ledger enforcing SHA-256 hash chaining across every risk score, rule decision, and dispute submission. Exportable as JSON for external audit compliance.
 
 ---
 
@@ -389,7 +403,7 @@ We stand on the shoulders of giants. PayShield AI was inspired by, and builds up
 - **Backend:** Python 3.12, FastAPI, LightGBM, SHAP, Pydantic v2, SQLite, httpx
 - **Frontend:** React 19, Vite, Tailwind CSS, Lucide React
 - **ML:** LightGBM, scikit-learn (Platt calibration, threshold sweep), matplotlib
-- **Payments:** PayPal Orders v2 API, PayPal Disputes v1 API, PayPal Webhook Verification
+- **Payments:** PayPal Orders v2 API, PayPal Disputes v1 API, PayPal Webhook Verification, Razorpay Orders API (Dual-Rail Adapter)
 - **CI:** GitHub Actions
 
 ---
