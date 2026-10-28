@@ -251,7 +251,6 @@ class PayPalClient:
         headers["PayPal-Request-Id"] = paypal_request_id or str(uuid.uuid4())
         payload = {
             "evidence_type": evidence_type,
-            "evidence_info": {"tracking_info": []},
             "notes": notes,
         }
         async with httpx.AsyncClient(timeout=12.0) as client:

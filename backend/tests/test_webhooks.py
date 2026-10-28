@@ -142,7 +142,7 @@ class TestWebhookProcessingPipeline:
         }
 
         audit_store = AuditStore()
-        initial_txs = len(audit_store.get_recent_transactions())
+        initial_txs = len(audit_store.get_recent_transactions(limit=10000))
 
         # 1. First POST -> 200 PROCESSED
         res1 = client.post("/api/v1/paypal/webhook", json=payload, headers=headers)
@@ -156,7 +156,7 @@ class TestWebhookProcessingPipeline:
         assert res2.json()["transmission_id"] == unique_tx_id
 
         # Assert audit log has exactly 1 new record
-        after_txs = len(audit_store.get_recent_transactions())
+        after_txs = len(audit_store.get_recent_transactions(limit=10000))
         assert after_txs == initial_txs + 1
 
     @patch("httpx.AsyncClient.post", new_callable=AsyncMock)
