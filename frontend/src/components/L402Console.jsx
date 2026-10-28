@@ -7,6 +7,11 @@ import {
   ExternalLink
 } from 'lucide-react';
 
+const PROVIDERS = [
+  { id: 'paypal',   label: 'PayPal',   badge: 'Orders v2',  color: 'bg-blue-50 border-blue-300 text-blue-700' },
+  { id: 'razorpay', label: 'Razorpay', badge: 'Orders API', color: 'bg-indigo-50 border-indigo-300 text-indigo-700' },
+];
+
 export default function L402Console({
   l402Step,
   l402Challenge,
@@ -21,7 +26,9 @@ export default function L402Console({
   onReset
 }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [provider, setProvider] = useState('paypal');
   const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+  const activeProvider = PROVIDERS.find(p => p.id === provider);
   const bulletins = Array.isArray(l402UnlockedData?.data)
     ? l402UnlockedData.data
     : (Array.isArray(l402UnlockedData) ? l402UnlockedData : []);
@@ -29,13 +36,28 @@ export default function L402Console({
   return (
     <div className="space-y-4 max-w-5xl mx-auto">
       {/* L402 Header Bar */}
-      <div className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm flex items-center justify-between gap-4">
-        <div className="flex items-center gap-2.5">
+      <div className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm flex items-center justify-between gap-4 flex-wrap">
+        <div className="flex items-center gap-2.5 flex-wrap">
           <span className="text-xs bg-purple-50 text-purple-700 border border-purple-200 font-mono px-3 py-1 rounded-full font-bold">
             L402 Protocol
           </span>
+          {/* Provider toggle */}
+          <div className="flex items-center gap-1 bg-gray-50 border border-gray-200 rounded-full p-0.5">
+            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider px-2">Settle via:</span>
+            {PROVIDERS.map(p => (
+              <button
+                key={p.id}
+                onClick={() => { setProvider(p.id); onReset(); }}
+                className={"px-3 py-1 rounded-full text-xs font-bold border transition cursor-pointer " + (
+                  provider === p.id ? p.color + ' shadow-sm' : 'bg-transparent border-transparent text-gray-500 hover:text-gray-700'
+                )}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
           <span className="text-xs text-gray-600 font-mono bg-gray-50 px-3 py-1 rounded-full border border-gray-200 font-medium">
-            PayPal Orders v2
+            {activeProvider?.badge}
           </span>
         </div>
 

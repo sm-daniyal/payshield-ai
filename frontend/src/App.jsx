@@ -289,6 +289,15 @@ export default function App() {
           activePortal={activePortal}
         />
 
+        {/* ROI Summary Bar */}
+        <div className="bg-indigo-600 text-white px-6 py-2 flex items-center justify-center gap-6 text-xs font-semibold flex-wrap shrink-0">
+          <span>🛡️ This month: <strong>14</strong> fraud attempts blocked</span>
+          <span className="hidden sm:inline text-indigo-300">·</span>
+          <span><strong>$312</strong> in dispute fees saved</span>
+          <span className="hidden sm:inline text-indigo-300">·</span>
+          <span><strong>3</strong> AI bots monetized → <strong>$0.15</strong> revenue</span>
+        </div>
+
         {/* Scrollable Portal View Area */}
         <main className="flex-1 overflow-y-auto p-6 md:p-8">
           <div className="max-w-7xl mx-auto w-full">
