@@ -1,12 +1,10 @@
 services:
   - type: web
-    name: payshield-ai-backend
-    env: python
+    name: payshield-ai
+    env: docker
     region: oregon
     plan: free
-    rootDir: backend
-    buildCommand: "pip install -r requirements.txt"
-    startCommand: "uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+    dockerfilePath: ./Dockerfile
     envVars:
       - key: APP_ENV
         value: production
@@ -16,7 +14,15 @@ services:
         value: "0.40"
       - key: DISPUTE_FILING_FEE_USD
         value: "15.00"
+      - key: PAYMENT_PROVIDER
+        value: paypal
       - key: PAYPAL_CLIENT_ID
         sync: false
       - key: PAYPAL_CLIENT_SECRET
+        sync: false
+      - key: PAYPAL_WEBHOOK_ID
+        sync: false
+      - key: RAZORPAY_KEY_ID
+        sync: false
+      - key: RAZORPAY_KEY_SECRET
         sync: false

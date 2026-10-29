@@ -6,8 +6,11 @@ The /evaluate endpoint (Phase 2) will be wired in here once the ML model is read
 """
 from contextlib import asynccontextmanager
 import logging
+from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
 from app.config import settings
 from app.engine.model_runner import ModelRunner
@@ -65,3 +68,19 @@ app.include_router(l402_router)
 async def health_check():
     """System health check — confirms the API is running."""
     return {"status": "ok", "service": "payshield-ai"}
+
+
+# Production Static SPA Mounting (used when built via Docker / Render)
+STATIC_DIR = Path(__file__).resolve().parent / "static"
+if STATIC_DIR.exists():
+    if (STATIC_DIR / "assets").exists():
+        app.mount("/assets", StaticFiles(directory=STATIC_DIR / "assets"), name="static_assets")
+
+    @app.get("/{full_path:path}", include_in_schema=False)
+    async def serve_spa(full_path: str):
+        if full_path.startswith("api") or full_path in ("docs", "redoc", "openapi.json"):
+            return None
+        target = STATIC_DIR / full_path
+        if target.exists() and target.is_file():
+            return FileResponse(target)
+        return FileResponse(STATIC_DIR / "index.html")
