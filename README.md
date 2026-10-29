@@ -410,4 +410,4 @@ We stand on the shoulders of giants. PayShield AI was inspired by, and builds up
 
 ## License
 
-[MIT License](LICENSE) © 2026 Syed Daniyal
+[MIT License](LICENSE) © 2026 sm-daniyal
