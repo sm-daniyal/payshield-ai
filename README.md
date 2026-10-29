@@ -4,10 +4,13 @@
 
 **PayShield AI turns three silent PayPal and Razorpay revenue leaks into automated wins:** it blocks card-testing bots before payment clearing using a calibrated LightGBM model, charges legitimate AI crawlers $0.05 per API call via the HTTP 402 machine-payment protocol settled on PayPal Orders v2, and autonomously decides when to fight—or concede—a disputed charge based on whether the expected payout exceeds PayPal's mandatory $15 dispute filing fee. Every decision is cryptographically sealed in an append-only SHA-256 audit ledger with no human in the loop.
 
+[![Live Demo](https://img.shields.io/badge/Live_Demo-payshield--ai.onrender.com-6366f1?style=for-the-badge&logo=render&logoColor=white)](https://payshield-ai-8nl4.onrender.com/)
 [![CI Pipeline](https://github.com/sm-daniyal/payshield-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/sm-daniyal/payshield-ai/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.12+](https://img.shields.io/badge/Python-3.12%2B-blue)](https://www.python.org/)
 [![Tests](https://img.shields.io/badge/tests-63%20passing-brightgreen)](https://github.com/sm-daniyal/payshield-ai/actions)
+
+> 🚀 **Live Production Deployment:** [https://payshield-ai-8nl4.onrender.com](https://payshield-ai-8nl4.onrender.com) &nbsp;|&nbsp; **Interactive Swagger Docs:** [https://payshield-ai-8nl4.onrender.com/api/docs](https://payshield-ai-8nl4.onrender.com/api/docs)
 
 ![PayShield Landing](screenshots/landing_page.png)
 
