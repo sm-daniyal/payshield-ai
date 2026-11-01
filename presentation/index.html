@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PayShield AI — Pitch Deck</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+    body {
+      background: #090d16;
+      color: #f1f5f9;
+      font-family: 'Inter', -apple-system, sans-serif;
+      overflow: hidden;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    
+    .bg-grid {
+      position: absolute;
+      inset: 0;
+      background-image: 
+        radial-gradient(ellipse at 50% 10%, rgba(99, 102, 241, 0.15) 0%, transparent 60%),
+        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      background-size: 100% 100%, 48px 48px, 48px 48px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    header {
+      position: relative;
+      z-index: 10;
+      padding: 28px 48px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+      font-size: 22px;
+      letter-spacing: -0.5px;
+    }
+
+    .logo-badge {
+      background: linear-gradient(135deg, #6366f1, #3b82f6);
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4);
+      font-size: 18px;
+    }
+
+    .track-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      background: rgba(99, 102, 241, 0.12);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      color: #a5b4fc;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    main {
+      position: relative;
+      z-index: 10;
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 48px;
+    }
+
+    .slide {
+      display: none;
+      width: 100%;
+      max-width: 1180px;
+      animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .slide.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(14px) scale(0.99); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .slide-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: #6366f1;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      font-size: 46px;
+      font-weight: 900;
+      line-height: 1.15;
+      letter-spacing: -1.2px;
+      margin-bottom: 18px;
+    }
+
+    .gradient-text-red {
+      background: linear-gradient(135deg, #f87171, #ef4444);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .gradient-text-blue {
+      background: linear-gradient(135deg, #818cf8, #38bdf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .gradient-text-green {
+      background: linear-gradient(135deg, #34d399, #10b981);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      font-size: 20px;
+      color: #94a3b8;
+      max-width: 820px;
+      line-height: 1.5;
+      margin-bottom: 36px;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .card {
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 28px 24px;
+      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .card.danger::before { background: linear-gradient(90deg, #ef4444, transparent); }
+    .card.primary::before { background: linear-gradient(90deg, #6366f1, transparent); }
+    .card.success::before { background: linear-gradient(90deg, #10b981, transparent); }
+
+    .card-icon {
+      font-size: 28px;
+      margin-bottom: 16px;
+      display: inline-block;
+    }
+
+    .card-title {
+      font-size: 19px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      letter-spacing: -0.3px;
+    }
+
+    .card-desc {
+      font-size: 14px;
+      color: #94a3b8;
+      line-height: 1.55;
+    }
+
+    .metric-pill {
+      display: inline-block;
+      margin-top: 14px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #cbd5e1;
+    }
+
+    footer {
+      position: relative;
+      z-index: 10;
+      padding: 0 48px 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .indicators {
+      display: flex;
+      gap: 10px;
+    }
+
+    .dot {
+      width: 32px;
+      height: 5px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.15);
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+
+    .dot.active {
+      background: #6366f1;
+      width: 54px;
+    }
+
+    .controls-hint {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: #64748b;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .key-btn {
+      padding: 3px 8px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 4px;
+      color: #cbd5e1;
+      cursor: pointer;
+    }
+
+    .demo-btn {
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      color: #fff;
+      border: none;
+      padding: 10px 22px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(99, 102, 241, 0.35);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      transition: transform 0.15s ease;
+    }
+
+    .demo-btn:hover {
+      transform: translateY(-1px);
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-grid"></div>
+
+  <header>
+    <div class="brand">
+      <div class="logo-badge"></div>
+      <span>PayShield <span style="color: #818cf8;">AI</span></span>
+    </div>
+    <div class="track-tag">Track 1: AI Growth & Agentic Commerce</div>
+  </header>
+
+  <main>
+    <!-- SLIDE 1: THE PROBLEM -->
+    <div class="slide active" id="slide-1">
+      <div class="slide-num">Slide 01 // The Problem</div>
+      <h1>Can AI Agents Be Trusted With <span class="gradient-text-red">Money?</span></h1>
+      <p class="subtitle">Autonomous commerce is exploding, but payment rails were built for humans with web browsers. Merchants are bleeding from 3 unaddressed leaks:</p>
+      
+      <div class="cards-grid">
+        <div class="card danger">
+          <div class="card-icon"></div>
+          <div class="card-title">Card-Testing Bots</div>
+          <div class="card-desc">Attackers flood checkout endpoints with thousands of stolen cards, leaving merchants with gateway fines and authorization fees.</div>
+          <div class="metric-pill">40% of checkout traffic</div>
+        </div>
+        <div class="card danger">
+          <div class="card-icon"></div>
+          <div class="card-title">Unmonetized AI Crawlers</div>
+          <div class="card-desc">Autonomous LLM scrapers consume server compute and commercial APIs at scale without paying a single cent.</div>
+          <div class="metric-pill">$0 captured per request</div>
+        </div>
+        <div class="card danger">
+          <div class="card-icon"></div>
+          <div class="card-title">The $15 Dispute Trap</div>
+          <div class="card-desc">Contesting low-value chargebacks triggers non-refundable $15 PayPal dispute fees, turning defense into guaranteed losses.</div>
+          <div class="metric-pill">-$9 loss on $12 claims</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 2: THE SOLUTION (HOW PAYSHIELD SOLVES IT) -->
+    <div class="slide" id="slide-2">
+      <div class="slide-num">Slide 02 // The Solution</div>
+      <h1>PayShield AI: <span class="gradient-text-blue">Autonomous Trust Layer</span></h1>
+      <p class="subtitle">A sub-100ms real-time gateway that protects merchants, charges machines, and fights disputes with zero human latency.</p>
+      
+      <div class="cards-grid">
+        <div class="card primary">
+          <div class="card-icon"></div>
+          <div class="card-title">Risk Radar (Pre-Clearing)</div>
+          <div class="card-desc">Calibrated LightGBM model scores incoming transactions in &lt;50ms, with exact SHAP feature attributions for banking auditability.</div>
+          <div class="metric-pill">&lt;50ms Inference | Zero False Closes</div>
+        </div>
+        <div class="card primary">
+          <div class="card-icon"></div>
+          <div class="card-title">HTTP 402 L402 Tollgate</div>
+          <div class="card-desc">Monetizes machine traffic by issuing cryptographic payment challenges settled instantly via PayPal Orders v2 micropayments.</div>
+          <div class="metric-pill">$0.05 / Machine Request</div>
+        </div>
+        <div class="card primary">
+          <div class="card-icon"></div>
+          <div class="card-title">EV Dispute Engine</div>
+          <div class="card-desc">Expected Value formula autonomously files winning evidence to PayPal Disputes v1 and auto-concedes unprofitable claims.</div>
+          <div class="metric-pill">P(win) × Amount &gt; $15 Fee</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 3: TECH STACK & PRODUCTION READINESS -->
+    <div class="slide" id="slide-3">
+      <div class="slide-num">Slide 03 // Production Architecture</div>
+      <h1>Live on <span class="gradient-text-green">PayPal Rails & Render</span></h1>
+      <p class="subtitle">Engineered for sub-second agentic speed, complete cryptographic tamper resistance, and production reliability.</p>
+      
+      <div class="cards-grid">
+        <div class="card success">
+          <div class="card-icon"></div>
+          <div class="card-title">PayPal SDK v2 & v1</div>
+          <div class="card-desc">Full integration with PayPal Orders v2 for micropayment capture and PayPal Disputes v1 API for autonomous dossier filing.</div>
+          <div class="metric-pill">Live Sandbox Verified</div>
+        </div>
+        <div class="card success">
+          <div class="card-icon"></div>
+          <div class="card-title">SHA-256 Audit Ledger</div>
+          <div class="card-desc">Every score, tollgate token, and dispute decision is cryptographically chained in an append-only verifiable audit trail.</div>
+          <div class="metric-pill">Immutable Hash Chaining</div>
+        </div>
+        <div class="card success">
+          <div class="card-icon"></div>
+          <div class="card-title">Deployed & Tested</div>
+          <div class="card-desc">Single-container multi-stage Docker deployment live on Render with 63 automated tests passing in CI.</div>
+          <div class="metric-pill">63/63 Tests Passing in CI</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="indicators">
+      <div class="dot active" onclick="goToSlide(0)"></div>
+      <div class="dot" onclick="goToSlide(1)"></div>
+      <div class="dot" onclick="goToSlide(2)"></div>
+    </div>
+
+    <div class="controls-hint">
+      <span>Press <button class="key-btn" onclick="prevSlide()">←</button> <button class="key-btn" onclick="nextSlide()">→</button> or Space</span>
+      <a href="https://payshield-ai-8nl4.onrender.com" target="_blank" class="demo-btn">
+        <span>Launch Live Demo</span> →
+      </a>
+    </div>
+  </footer>
+
+  <script>
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
+    const dots = document.querySelectorAll('.dot');
+
+    function updateSlide() {
+      slides.forEach((s, i) => s.classList.toggle('active', i === currentSlide));
+      dots.forEach((d, i) => d.classList.toggle('active', i === currentSlide));
+    }
+
+    function nextSlide() {
+      if (currentSlide < slides.length - 1) {
+        currentSlide++;
+        updateSlide();
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlide > 0) {
+        currentSlide--;
+        updateSlide();
+      }
+    }
+
+    function goToSlide(index) {
+      currentSlide = index;
+      updateSlide();
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+        e.preventDefault();
+        nextSlide();
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        e.preventDefault();
+        prevSlide();
+      }
+    });
+  </script>
+</body>
+</html>
