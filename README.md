@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="screenshots/readme_logo_header.png" alt="PayShield AI" width="620" />
+</p>
+
 # PayShield AI
 
 > **The Autonomous Trust & Monetization Layer for Agentic Commerce on PayPal.**
