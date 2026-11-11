@@ -15,7 +15,7 @@
 [![Python 3.12+](https://img.shields.io/badge/Python-3.12%2B-blue)](https://www.python.org/)
 [![Tests](https://img.shields.io/badge/tests-63%20passing-brightgreen)](https://github.com/sm-daniyal/payshield-ai/actions)
 
-> 🚀 **Live Production Deployment:** [https://payshield-ai-8nl4.onrender.com](https://payshield-ai-8nl4.onrender.com) &nbsp;|&nbsp; 🎬 **Video Walkthrough:** [https://youtu.be/SJ0VJCgWaXg](https://youtu.be/SJ0VJCgWaXg) &nbsp;|&nbsp; 📖 **Interactive Swagger Docs:** [https://payshield-ai-8nl4.onrender.com/api/docs](https://payshield-ai-8nl4.onrender.com/api/docs)
+>  **Live Production Deployment:** [https://payshield-ai-8nl4.onrender.com](https://payshield-ai-8nl4.onrender.com) &nbsp;|&nbsp;  **Video Walkthrough:** [https://youtu.be/SJ0VJCgWaXg](https://youtu.be/SJ0VJCgWaXg) &nbsp;|&nbsp; **Interactive Swagger Docs:** [https://payshield-ai-8nl4.onrender.com/api/docs](https://payshield-ai-8nl4.onrender.com/api/docs)
 
 ![PayShield Landing](screenshots/landing_page.png)
 
