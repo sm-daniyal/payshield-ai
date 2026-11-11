@@ -9,20 +9,55 @@
 **PayShield AI turns three silent PayPal and Razorpay revenue leaks into automated wins:** it blocks card-testing bots before payment clearing using a calibrated LightGBM model, charges legitimate AI crawlers $0.05 per API call via the HTTP 402 machine-payment protocol settled on PayPal Orders v2, and autonomously decides when to fight—or concede—a disputed charge based on whether the expected payout exceeds PayPal's mandatory $15 dispute filing fee. Every decision is cryptographically sealed in an append-only SHA-256 audit ledger with no human in the loop.
 
 [![Live Demo](https://img.shields.io/badge/Live_Demo-payshield--ai.onrender.com-6366f1?style=for-the-badge&logo=render&logoColor=white)](https://payshield-ai-8nl4.onrender.com/)
+[![Video Demo](https://img.shields.io/badge/Video_Demo-YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://youtu.be/SJ0VJCgWaXg)
 [![CI Pipeline](https://github.com/sm-daniyal/payshield-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/sm-daniyal/payshield-ai/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.12+](https://img.shields.io/badge/Python-3.12%2B-blue)](https://www.python.org/)
 [![Tests](https://img.shields.io/badge/tests-63%20passing-brightgreen)](https://github.com/sm-daniyal/payshield-ai/actions)
 
-> 🚀 **Live Production Deployment:** [https://payshield-ai-8nl4.onrender.com](https://payshield-ai-8nl4.onrender.com) &nbsp;|&nbsp; **Interactive Swagger Docs:** [https://payshield-ai-8nl4.onrender.com/api/docs](https://payshield-ai-8nl4.onrender.com/api/docs)
+> 🚀 **Live Production Deployment:** [https://payshield-ai-8nl4.onrender.com](https://payshield-ai-8nl4.onrender.com) &nbsp;|&nbsp; 🎬 **Video Walkthrough:** [https://youtu.be/SJ0VJCgWaXg](https://youtu.be/SJ0VJCgWaXg) &nbsp;|&nbsp; 📖 **Interactive Swagger Docs:** [https://payshield-ai-8nl4.onrender.com/api/docs](https://payshield-ai-8nl4.onrender.com/api/docs)
 
 ![PayShield Landing](screenshots/landing_page.png)
 
 ---
 
+## 🎬 Video Walkthrough & Judge Quickstart
+
+### 📺 3-Minute Demo Video
+Watch the end-to-end hackathon demonstration covering pre-transaction fraud scoring, L402 machine commerce, and autonomous dispute recovery on YouTube:
+
+[![Watch Demo Video](https://img.shields.io/badge/Watch_on_YouTube-Play_Video-red?style=for-the-badge&logo=youtube&logoColor=white)](https://youtu.be/SJ0VJCgWaXg)
+
+> **Direct Link:** [https://youtu.be/SJ0VJCgWaXg](https://youtu.be/SJ0VJCgWaXg)
+
+### ⚡ 60-Second Judge Quickstart (Test Live API Now)
+You can evaluate PayShield AI's live production engine right now from your terminal with zero local installation:
+
+```bash
+# 1. Test live fraud trust scoring & grounded SHAP explanation (<50ms)
+curl -X POST "https://payshield-ai-8nl4.onrender.com/api/v1/evaluate" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": 480.00,
+    "currency": "USD",
+    "payer_email": "bot_attacker@enumeration.net",
+    "client_ip": "185.220.101.5",
+    "buyer_country": "US",
+    "prior_transactions_count_1h": 14,
+    "prior_transactions_count_24h": 42
+  }'
+```
+
+```bash
+# 2. Test HTTP 402 machine-payment tollgate (returns challenge with PayPal offer)
+curl -i "https://payshield-ai-8nl4.onrender.com/api/v1/l402/threat-feed"
+```
+
+---
+
 ## Table of Contents
 
-[The Problem](#the-problem) · [How It Works](#how-it-works) · [Architecture](#architecture) · [ML Pipeline](#ml-pipeline) · [Model Results](#model--evaluation-results) · [Decision Engine](#decision-engine) · [L402 Tollgate](#l402-tollgate--agentic-commerce) · [Dispute Recovery](#dispute-recovery-engine) · [Payments Security](#payments-security) · [API Reference](#api-reference) · [Frontend](#frontend--dashboard) · [Project Structure](#project-structure) · [Local Setup](#local-setup) · [Testing](#testing) · [Limitations](#limitations--prototype-scope)
+[Video & Quickstart](#-video-walkthrough--judge-quickstart) · [The Problem](#the-problem) · [How It Works](#how-it-works) · [Architecture](#architecture) · [ML Pipeline](#ml-pipeline) · [Model Results](#model--evaluation-results) · [Decision Engine](#decision-engine) · [L402 Tollgate](#l402-tollgate--agentic-commerce) · [Dispute Recovery](#dispute-recovery-engine) · [Payments Security](#payments-security) · [API Reference](#api-reference) · [Frontend](#frontend--dashboard) · [Project Structure](#project-structure) · [Local Setup](#local-setup) · [Testing](#testing) · [Limitations](#limitations--prototype-scope)
 
 ---
 
@@ -246,12 +281,13 @@ Headless machine-to-machine agents programmatically invoke `/api/v1/l402/payment
 
 ```text
 payshield-ai/
-├── backend/
-│   ├── app/
-│   │   ├── api/              # FastAPI routers: evaluate, l402, disputes, webhooks
-│   │   ├── db/               # AuditStore: SHA-256 chained SQLite audit log
-│   │   ├── engine/           # feature_pipeline, model_runner, decision_engine, dispute_recovery
-│   │   ├── paypal/           # PayPalClient: Orders v2, Disputes v1, OAuth token cache
+├── backend/                  # [Backend Blueprint](backend/README.md)
+│   ├── app/                  # [App Core Blueprint](backend/app/README.md)
+│   │   ├── api/              # [API Router Contract](backend/app/api/README.md): evaluate, l402, disputes, webhooks
+│   │   ├── db/               # [Audit Vault Contract](backend/app/db/README.md): SHA-256 chained SQLite audit log
+│   │   ├── engine/           # [Engine Contract](backend/app/engine/README.md): feature_pipeline, model_runner, decision_engine
+│   │   ├── paypal/           # [PayPal Contract](backend/app/paypal/README.md): Orders v2, Disputes v1, Razorpay client
+│   │   ├── schemas/          # [Schemas Contract](backend/app/schemas/README.md): Pydantic v2 data models
 │   │   ├── config.py         # Pydantic settings (reads from .env)
 │   │   └── main.py           # FastAPI app factory, CORS, router mounts
 │   ├── ml/

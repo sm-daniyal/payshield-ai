@@ -1,16 +1,17 @@
-# React + Vite
+# PayShield AI Frontend Blueprint
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+## System Overview
+Modern, responsive single-page merchant dashboard built with React 19, Vite, and Tailwind CSS. Replaces default boilerplate with an institutional-grade financial monitoring console featuring real-time SHAP explainability charts, L402 machine-payment simulation, and cryptographic audit inspection.
 
-Currently, two official plugins are available:
+## Subdirectories & System Boundaries
+- [src/components](./src/components/README.md): Core dashboard modules (RiskRadar, L402Console, DisputeStudio, AuditVault).
+- [src/assets](./src/assets): Static brand assets, architectural diagrams, and illustrations.
+- [src/data](./src/data): Mock datasets and transaction presets for offline demonstration.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Global Invariants
+- React 19 Strict Mode: High-performance concurrent rendering without deprecated lifecycle methods.
+- Zero Emojis Policy: Codebase, UI text, and documentation maintain a professional fintech aesthetic.
+- Design System: Dark-slate UI palette (`bg-slate-900`, `border-slate-800`) with high-contrast accessibility compliance.
 
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+## System Verification
+- Run: `npm run build`
